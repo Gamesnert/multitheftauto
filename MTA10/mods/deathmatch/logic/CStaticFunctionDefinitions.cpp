@@ -5283,7 +5283,7 @@ CClientColShape* CStaticFunctionDefinitions::GetElementColShape ( CClientEntity*
 
 bool CStaticFunctionDefinitions::GetWeaponNameFromID ( unsigned char ucID, char* szName, unsigned short len )
 {
-    if ( ucID <= 59 )
+    if ( ucID < NUMBER_OF_WEAPON_NAMES )
     {
         // Grab the name and check it's length
         const char* szNamePointer = CWeaponNames::GetWeaponName ( ucID );

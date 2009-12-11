@@ -12,6 +12,8 @@
 #ifndef __CWEAPONNAMES_H
 #define __CWEAPONNAMES_H
 
+#define NUMBER_OF_WEAPON_NAMES 60
+
 class CWeaponNames
 {
 public:
