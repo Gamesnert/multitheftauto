@@ -41,13 +41,6 @@ public:
     static bool         Me              ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         Nick            ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
-    static bool         LogIn           ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-    static bool         LogOut          ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-    static bool         ChgMyPass       ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-
-    static bool         AddAccount      ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-    static bool         DelAccount      ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-    static bool         ChgPass         ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         Shutdown        ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
     static bool         AExec           ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );

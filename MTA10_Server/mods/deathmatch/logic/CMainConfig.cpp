@@ -475,13 +475,6 @@ bool CMainConfig::LoadExtended ( void )
     RegisterCommand ( "me", CConsoleCommands::Me, false );
     RegisterCommand ( "nick", CConsoleCommands::Nick, false );
 
-    RegisterCommand ( "login", CConsoleCommands::LogIn, false );
-    RegisterCommand ( "logout", CConsoleCommands::LogOut, false );
-    RegisterCommand ( "chgmypass", CConsoleCommands::ChgMyPass, false );
-
-    RegisterCommand ( "addaccount", CConsoleCommands::AddAccount, false );
-    RegisterCommand ( "delaccount", CConsoleCommands::DelAccount, false );
-    RegisterCommand ( "chgpass", CConsoleCommands::ChgPass, false );
     RegisterCommand ( "shutdown", CConsoleCommands::Shutdown, false );
 
     RegisterCommand ( "aexec", CConsoleCommands::AExec, false );

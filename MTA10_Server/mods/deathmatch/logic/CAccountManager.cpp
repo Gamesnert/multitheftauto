@@ -555,7 +555,6 @@ bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, const char
     // Is he already logged in?
     if ( pClient->IsRegistered () )
     {
-        if ( pEchoClient ) pEchoClient->SendEcho ( "login: You are already logged in" );
         return false;
     }
 
@@ -563,19 +562,15 @@ bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, const char
     CAccount* pAccount = g_pGame->GetAccountManager ()->Get ( szNick );
     if ( !pAccount )
     {
-        if ( pEchoClient ) pEchoClient->SendEcho( SString( "login: No known account for '%s'", szNick ).c_str() );
         return false;
     }
 
     if ( pAccount->GetClient () )
     {
-        if ( pEchoClient ) pEchoClient->SendEcho ( SString( "login: Account for '%s' is already in use", szNick ).c_str() );
         return false;
     }
     if ( strlen ( szPassword ) > MAX_PASSWORD_LENGTH || !pAccount->IsPassword ( szPassword ) )
     {
-        if ( pEchoClient ) pEchoClient->SendEcho ( SString( "login: Invalid password for account '%s'", szNick ).c_str() );
-        CLogger::LogPrintf ( "LOGIN: '%s' tried to log in with an invalid password.\n", szNick );
         return false;
     }
 
@@ -632,18 +627,6 @@ bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, CAccount* 
         }
     }
 
-    // Tell the console
-    CLogger::LogPrintf ( "LOGIN: %s successfully logged in\n", pClient->GetNick () );
-
-    // Tell the player
-    if ( pEchoClient )
-    {
-        if ( bAutoLogin )
-            pEchoClient->SendEcho ( "auto-login: You successfully logged in" );
-        else
-            pEchoClient->SendEcho ( "login: You successfully logged in" );
-    }
-
     // Delete the old account if it was a guest account
     if ( !pCurrentAccount->IsRegistered () )
         delete pCurrentAccount;
@@ -656,8 +639,6 @@ bool CAccountManager::LogOut ( CClient* pClient, CClient* pEchoClient )
     // Is he logged in?
     if ( !pClient->IsRegistered () )
     {
-        if ( pEchoClient )
-            pEchoClient->SendEcho ( "logout: You were not logged in" );
         return false;
     }
 
@@ -699,13 +680,6 @@ bool CAccountManager::LogOut ( CClient* pClient, CClient* pEchoClient )
             return false;
         }
     }
-
-    // Tell the console
-    CLogger::LogPrintf ( "LOGOUT: %s logged out\n", pClient->GetNick () );
-
-    // Tell the player
-    if ( pEchoClient )
-        pEchoClient->SendEcho ( "logout: You logged out" );
 
     return true;
 }
