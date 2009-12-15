@@ -550,7 +550,7 @@ void CAccountManager::RemoveAll ( void )
     m_bRemoveFromList = true;
 }
 
-bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, const char* szNick, const char* szPassword )
+bool CAccountManager::LogIn ( CClient* pClient,  const char* szNick, const char* szPassword )
 {
     // Is he already logged in?
     if ( pClient->IsRegistered () )
@@ -575,10 +575,10 @@ bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, const char
     }
 
     // Try to log him in
-    return LogIn ( pClient, pEchoClient, pAccount );
+    return LogIn ( pClient, pAccount );
 }
 
-bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, CAccount* pAccount, bool bAutoLogin )
+bool CAccountManager::LogIn ( CClient* pClient, CAccount* pAccount, bool bAutoLogin )
 {
     // Log him in
     CAccount* pCurrentAccount = pClient->GetAccount ();
@@ -634,7 +634,7 @@ bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, CAccount* 
     return true;
 }
 
-bool CAccountManager::LogOut ( CClient* pClient, CClient* pEchoClient )
+bool CAccountManager::LogOut ( CClient* pClient)
 {
     // Is he logged in?
     if ( !pClient->IsRegistered () )

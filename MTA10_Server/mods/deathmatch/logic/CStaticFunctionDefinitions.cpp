@@ -7382,7 +7382,7 @@ bool CStaticFunctionDefinitions::RemoveAccount ( CAccount* pAccount )
         CClient* pClient = pAccount->GetClient ();
         if ( pClient )
         {
-            g_pGame->GetAccountManager ()->LogOut ( pClient, NULL );
+            g_pGame->GetAccountManager ()->LogOut ( pClient );
 
             char szMessage [128];
             szMessage[0] = '\0';
@@ -7452,13 +7452,13 @@ bool CStaticFunctionDefinitions::CopyAccountData ( CAccount* pAccount, CAccount*
 
 bool CStaticFunctionDefinitions::LogIn ( CPlayer* pPlayer, CAccount* pAccount, const char* szPassword )
 {
-    return m_pAccountManager->LogIn ( pPlayer, pPlayer, pAccount->GetName ().c_str (), szPassword );
+    return m_pAccountManager->LogIn ( pPlayer, pAccount->GetName ().c_str (), szPassword );
 }
 
 
 bool CStaticFunctionDefinitions::LogOut ( CPlayer* pPlayer )
 {
-    return m_pAccountManager->LogOut ( pPlayer, pPlayer );
+    return m_pAccountManager->LogOut ( pPlayer );
 }
 
 

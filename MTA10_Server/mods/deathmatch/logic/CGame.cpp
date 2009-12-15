@@ -1054,7 +1054,7 @@ void CGame::InitialDataStream ( CPlayer& Player )
         CAccount* pAccount = m_pAccountManager->Get ( Player.GetNick (), szIP );
         if ( pAccount )
         {
-            m_pAccountManager->LogIn ( &Player, &Player, pAccount, true );
+            m_pAccountManager->LogIn ( &Player, pAccount, true );
         }
     }
 }
