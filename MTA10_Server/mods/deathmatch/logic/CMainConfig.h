@@ -58,8 +58,8 @@ public:
     inline bool                     GetHTTPAutoClientFiles          ( void )        { return m_bHTTPAutoClientFiles; };
     inline int                      GetHTTPConnectionsPerClient     ( void )        { return m_iHTTPConnectionsPerClient; };
     inline int                      GetEnableClientChecks           ( void )        { return m_iEnableClientChecks; };
-    inline bool                     GetLogFileEnabled               ( void )        { return m_bLogFileEnabled; };
     inline const std::string&       GetLogFile                      ( void )        { return m_strLogFile; };
+    inline const std::string&       GetAuthFile                     ( void )        { return m_strAuthFile; };
     inline bool                     GetAutoUpdateAntiCheatEnabled   ( void )        { return m_bAutoUpdateAntiCheatEnabled; };
     inline bool                     GetJoinFloodProtectionEnabled   ( void )        { return m_bJoinFloodProtectionEnabled; };
     inline bool                     GetScriptDebugLogEnabled        ( void )        { return m_bScriptDebugLogEnabled && !m_strScriptDebugLogFile.empty (); };
@@ -97,8 +97,8 @@ private:
     bool                            m_bHTTPAutoClientFiles;
     int                             m_iHTTPConnectionsPerClient;
     int                             m_iEnableClientChecks;
-    bool                            m_bLogFileEnabled;
     std::string                     m_strLogFile;
+    std::string                     m_strAuthFile;
     bool                            m_bAutoUpdateAntiCheatEnabled;
     bool                            m_bJoinFloodProtectionEnabled;
     bool                            m_bScriptDebugLogEnabled;

@@ -16,10 +16,11 @@
 #include "StdInc.h"
 
 CAccountManager::CAccountManager ( char* szFileName ): CXMLConfig ( szFileName )
+    , m_AccountProtect( 6, 30000, 60000 * 1 )     // Max of 6 attempts per 30 seconds, then 1 minute ignore
 {
     m_bRemoveFromList = true;
     m_bAutoLogin = false;
-    m_ulLastTimeSaved = GetTime ();
+    m_llLastTimeSaved = GetTickCount64_ ();
     m_bChangedSinceSaved = false;
 }
 
@@ -35,7 +36,7 @@ void CAccountManager::DoPulse ( void )
 {
     // Save it only once in a while whenever something has changed
     if ( m_bChangedSinceSaved &&
-         GetTime () > m_ulLastTimeSaved + 15000 )
+         GetTickCount64_ () > m_llLastTimeSaved + 15000 )
     {
         // Save it
         Save ();
@@ -253,7 +254,7 @@ bool CAccountManager::Save ( const char* szFileName )
 {
     // Attempted save now
     m_bChangedSinceSaved = false;
-    m_ulLastTimeSaved = GetTime ();
+    m_llLastTimeSaved = GetTickCount64_ ();
 
     if ( szFileName == NULL )
         szFileName = m_strFileName.c_str ();
@@ -293,6 +294,11 @@ bool CAccountManager::Save ( const char* szFileName )
     m_pFile->Write ();
     delete m_pFile;
     m_pFile = NULL;
+
+    long long llDeltaTime = GetTickCount64_ () - m_llLastTimeSaved;
+    if ( llDeltaTime > 5000 )
+        CLogger::LogPrintf ( "INFO: Took %lld seconds to save accounts XML file.\n", llDeltaTime / 1000 );
+
     return true;
 }
 
@@ -537,6 +543,11 @@ void CAccountManager::RemoveFromList ( CAccount* pAccount )
     }
 }
 
+void CAccountManager::MarkAsChanged ( CAccount* pAccount )
+{
+    if ( pAccount->IsRegistered () )
+        m_bChangedSinceSaved = true;
+}
 
 void CAccountManager::RemoveAll ( void )
 {
@@ -550,11 +561,30 @@ void CAccountManager::RemoveAll ( void )
     m_bRemoveFromList = true;
 }
 
-bool CAccountManager::LogIn ( CClient* pClient,  const char* szNick, const char* szPassword )
+bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, const char* szNick, const char* szPassword )
 {
     // Is he already logged in?
     if ( pClient->IsRegistered () )
     {
+        if ( pEchoClient ) pEchoClient->SendEcho ( "login: You are already logged in" );
+        return false;
+    }
+
+    // Get the players details if relevant
+    string strPlayerName, strPlayerIP, strPlayerSerial;
+    if ( pClient->GetClientType () == CClient::CLIENT_PLAYER )
+    {
+        CPlayer* pPlayer = static_cast < CPlayer* > ( pClient );
+        char szIP [32] = { "\0" };
+        strPlayerIP = pPlayer->GetSourceIP ( szIP );
+        strPlayerName = pPlayer->GetNick ();
+        strPlayerSerial = pPlayer->GetSerial ();
+    }
+
+    if ( m_AccountProtect.IsFlooding ( strPlayerIP.c_str () ) )
+    {
+        if ( pEchoClient ) pEchoClient->SendEcho ( SString( "login: Account locked", szNick ).c_str() );
+        CLogger::AuthPrintf ( "LOGIN: Ignoring %s trying to log in as '%s' (IP: %s  Serial: %s)\n", strPlayerName.c_str (), szNick, strPlayerIP.c_str (), strPlayerSerial.c_str () );
         return false;
     }
 
@@ -562,37 +592,47 @@ bool CAccountManager::LogIn ( CClient* pClient,  const char* szNick, const char*
     CAccount* pAccount = g_pGame->GetAccountManager ()->Get ( szNick );
     if ( !pAccount )
     {
+        if ( pEchoClient ) pEchoClient->SendEcho( SString( "login: No known account for '%s'", szNick ).c_str() );
+        CLogger::AuthPrintf ( "LOGIN: %s tried to log in as '%s' (Unknown account) (IP: %s  Serial: %s)\n", strPlayerName.c_str (), szNick, strPlayerIP.c_str (), strPlayerSerial.c_str () );
         return false;
     }
 
     if ( pAccount->GetClient () )
     {
+        if ( pEchoClient ) pEchoClient->SendEcho ( SString( "login: Account for '%s' is already in use", szNick ).c_str() );
         return false;
     }
     if ( strlen ( szPassword ) > MAX_PASSWORD_LENGTH || !pAccount->IsPassword ( szPassword ) )
     {
+        if ( pEchoClient ) pEchoClient->SendEcho ( SString( "login: Invalid password for account '%s'", szNick ).c_str() );
+        CLogger::AuthPrintf ( "LOGIN: %s tried to log in as '%s' with an invalid password (IP: %s  Serial: %s)\n", strPlayerName.c_str (), szNick, strPlayerIP.c_str (), strPlayerSerial.c_str () );
+        m_AccountProtect.AddConnect ( strPlayerIP.c_str () );
         return false;
     }
 
     // Try to log him in
-    return LogIn ( pClient, pAccount );
+    return LogIn ( pClient, pEchoClient, pAccount );
 }
 
-bool CAccountManager::LogIn ( CClient* pClient, CAccount* pAccount, bool bAutoLogin )
+bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, CAccount* pAccount, bool bAutoLogin )
 {
     // Log him in
     CAccount* pCurrentAccount = pClient->GetAccount ();
     pClient->SetAccount ( pAccount );
     pAccount->SetClient ( pClient );
 
-    // Set IP in account
+    string strPlayerIP, strPlayerSerial;
     if ( pClient->GetClientType () == CClient::CLIENT_PLAYER )
     {
         CPlayer* pPlayer = static_cast < CPlayer* > ( pClient );
 
         char szIP [ 25 ];
         pPlayer->GetSourceIP ( szIP );
+        // Set IP in account
         pAccount->SetIP ( szIP );
+        // Get the players details
+        strPlayerIP = szIP;
+        strPlayerSerial = pPlayer->GetSerial ();
     }
 
     // Call the onClientLogin script event
@@ -627,6 +667,18 @@ bool CAccountManager::LogIn ( CClient* pClient, CAccount* pAccount, bool bAutoLo
         }
     }
 
+    // Tell the console
+    CLogger::AuthPrintf ( "LOGIN: %s successfully logged in as '%s' (IP: %s  Serial: %s)\n", pClient->GetNick (), pAccount->GetName ().c_str (), strPlayerIP.c_str (), strPlayerSerial.c_str () );
+
+    // Tell the player
+    if ( pEchoClient )
+    {
+        if ( bAutoLogin )
+            pEchoClient->SendEcho ( "auto-login: You successfully logged in" );
+        else
+            pEchoClient->SendEcho ( "login: You successfully logged in" );
+    }
+
     // Delete the old account if it was a guest account
     if ( !pCurrentAccount->IsRegistered () )
         delete pCurrentAccount;
@@ -634,11 +686,13 @@ bool CAccountManager::LogIn ( CClient* pClient, CAccount* pAccount, bool bAutoLo
     return true;
 }
 
-bool CAccountManager::LogOut ( CClient* pClient)
+bool CAccountManager::LogOut ( CClient* pClient, CClient* pEchoClient )
 {
     // Is he logged in?
     if ( !pClient->IsRegistered () )
     {
+        if ( pEchoClient )
+            pEchoClient->SendEcho ( "logout: You were not logged in" );
         return false;
     }
 
@@ -680,6 +734,13 @@ bool CAccountManager::LogOut ( CClient* pClient)
             return false;
         }
     }
+
+    // Tell the console
+    CLogger::AuthPrintf ( "LOGOUT: %s logged out as '%s'\n", pClient->GetNick (), pCurrentAccount->GetName ().c_str () );
+
+    // Tell the player
+    if ( pEchoClient )
+        pEchoClient->SendEcho ( "logout: You logged out" );
 
     return true;
 }

@@ -768,10 +768,11 @@ int CLuaFunctionDefs::GUIBringToFront ( lua_State* luaVM )
         CClientEntity* pEntity = lua_toelement ( luaVM, 1 );
         if ( pEntity )
         {
-            CStaticFunctionDefinitions::GUIBringToFront ( *pEntity );
-
-            lua_pushboolean ( luaVM, true );
-            return 1;
+            if ( CStaticFunctionDefinitions::GUIBringToFront ( *pEntity ) )
+            {
+                lua_pushboolean ( luaVM, true );
+                return 1;
+            }
         }
         else
             m_pScriptDebugging->LogBadPointer ( luaVM, "guiBringToFront", "gui-element", 1 );
@@ -1545,8 +1546,9 @@ int CLuaFunctionDefs::GUIGridListAddRow ( lua_State* luaVM )
         CClientGUIElement *pGUIElement = lua_toguielement ( luaVM, 1 );
         if ( pGUIElement && IS_CGUIELEMENT_GRIDLIST ( pGUIElement ) )
         {
-            iRet = CStaticFunctionDefinitions::GUIGridListAddRow ( *pGUIElement );
+            iRet = CStaticFunctionDefinitions::GUIGridListAddRow ( *pGUIElement, true );
             if ( iRet >= 0 ) {
+                m_pGUIManager->DeferGridListUpdate ( pGUIElement );
                 lua_pushnumber ( luaVM, iRet );
                 return 1;
             }
@@ -1874,9 +1876,10 @@ int CLuaFunctionDefs::GUIGridListSetItemText ( lua_State* luaVM )
                 static_cast < int > ( lua_tonumber ( luaVM, 3 ) ),
                 lua_tostring ( luaVM, 4 ),
                 lua_toboolean ( luaVM, 5 ) ? true : false,
-                lua_toboolean ( luaVM, 6 ) ? true : false
+                lua_toboolean ( luaVM, 6 ) ? true : false,
+                true
             );
-
+            m_pGUIManager->DeferGridListUpdate ( pGUIElement );
             lua_pushboolean ( luaVM, true );
             return 1;
         }
@@ -2299,7 +2302,7 @@ int CLuaFunctionDefs::GUILabelSetVerticalAlign ( lua_State* luaVM )
         else
         {
             // Bad align string
-            CLogger::ErrorPrintf ( "%s", "ERROR: No such align for guiLabelSetVerticalAlign" );
+            CLogger::ErrorPrintf ( "%s", "No such align for guiLabelSetVerticalAlign" );
             lua_pushboolean ( luaVM, false );
             return 0;
         }
@@ -2365,7 +2368,7 @@ int CLuaFunctionDefs::GUILabelSetHorizontalAlign ( lua_State* luaVM )
         else
         {
             // Bad align string
-            CLogger::ErrorPrintf ( "%s", "ERROR: No such align for guiLabelSetHorizontalAlign" );
+            CLogger::ErrorPrintf ( "%s", "No such align for guiLabelSetHorizontalAlign" );
             lua_pushboolean ( luaVM, false );
             return 0;
         }

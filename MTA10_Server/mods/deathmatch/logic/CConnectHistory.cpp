@@ -12,25 +12,69 @@
 
 #include "StdInc.h"
 
-CConnectHistory::CConnectHistory ( void )
+CConnectHistory::CConnectHistory ( unsigned long ulMaxConnections, unsigned long ulSamplePeriod, unsigned long ulBanLength )
 {
-    // Max of 4 connections per 30 seconds
-    m_MaxConnections = 4;
-    m_SamplePeriod = 30000;
+    m_ulMaxConnections = ulMaxConnections;
+    m_ulSamplePeriod = ulSamplePeriod;
+    m_ulBanLength = ulBanLength;
 }
 
+// Add flood candidate connection attempt and return true if flooding is occurring
+bool CConnectHistory::AddConnect ( const string& strIP )
+{
+    // See if banned first
+    if ( IsFlooding ( strIP ) )
+        return true;
 
-bool CConnectHistory::IsFlooding ( unsigned long ulIP )
+    // Get history for this IP
+    CConnectHistoryItem& historyItem = GetHistoryItem ( strIP );
+
+    // Add time of this allowed connection
+    historyItem.joinTimes.push_back ( GetTickCount64_ () );
+    return false;
+}
+
+// Check if IP is currently flooding
+bool CConnectHistory::IsFlooding ( const string& strIP )
 {
     // Delete the expired entries
     RemoveExpired ();
 
     // Get history for this IP
-    CConnectHistoryItem& historyItem = GetHistoryItem ( ulIP );
+    CConnectHistoryItem& historyItem = GetHistoryItem ( strIP );
+
+    // Check if inside ban time
+    if ( GetTickCount64_ () < historyItem.llBanEndTime )
+        return true;
+
+    // Check if too many connections
+    if ( historyItem.joinTimes.size () > m_ulMaxConnections )
+    {
+        // Begin timed ban
+        historyItem.llBanEndTime = GetTickCount64_ () + m_ulBanLength;
+        return true;
+    }
+
+    return false;
+}
+
+
+CConnectHistoryItem& CConnectHistory::GetHistoryItem ( const string& strIP )
+{
+    // Find existing
+    map < string, CConnectHistoryItem >::iterator iter = m_HistoryItemMap.find ( strIP );
+
+    if ( iter == m_HistoryItemMap.end () )
+    {
+        // Add if not found
+        m_HistoryItemMap[strIP] = CConnectHistoryItem();
+        iter = m_HistoryItemMap.find ( strIP );
+    }
 
 #if MTA_DEBUG
     // Dump info
-    SString strInfo ( "IP:%x  ", ulIP );
+    CConnectHistoryItem& historyItem = iter->second;
+    SString strInfo ( "IP:%s  ", strIP.c_str () );
     for ( unsigned int i = 0 ; i < historyItem.joinTimes.size () ; i++ )
     {
         strInfo += SString ( "%u  ", GetTickCount64_ () - historyItem.joinTimes[i] );
@@ -38,28 +82,6 @@ bool CConnectHistory::IsFlooding ( unsigned long ulIP )
     strInfo += "\n";
     OutputDebugString ( strInfo );
 #endif
-
-    // See if connections count is too high
-    if ( historyItem.joinTimes.size () > m_MaxConnections )
-        return true;
-
-    // Add time of this allowed connection
-    historyItem.joinTimes.push_back ( GetTickCount64_ () );
-    return false;
-}
-
-
-CConnectHistoryItem& CConnectHistory::GetHistoryItem ( unsigned long ulIP )
-{
-    // Find existing
-    map < unsigned long, CConnectHistoryItem >::iterator iter = m_HistoryItemMap.find ( ulIP );
-
-    if ( iter == m_HistoryItemMap.end () )
-    {
-        // Add if not found
-        m_HistoryItemMap[ulIP] = CConnectHistoryItem();
-        iter = m_HistoryItemMap.find ( ulIP );
-    }
 
     return iter->second;
 }
@@ -79,7 +101,7 @@ void CConnectHistory::RemoveExpired ( void )
         JoinTimesMap ::iterator timesIt = historyItem.joinTimes.begin ();
         for ( ; timesIt < historyItem.joinTimes.end () ; ++timesIt )
         {
-            if ( *timesIt > llCurrentTime - m_SamplePeriod )
+            if ( *timesIt > llCurrentTime - m_ulSamplePeriod )
                 break;
         }
 

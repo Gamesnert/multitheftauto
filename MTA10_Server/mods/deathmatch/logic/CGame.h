@@ -206,10 +206,6 @@ public:
     inline CSerialManager*          GetSerialManager            ( void )        { return &m_SerialManager; }
     inline CWaterManager*           GetWaterManager             ( void )        { return m_pWaterManager; }
 
-#ifdef WIN32
-    inline CRITICAL_SECTION *   GetCriticalSection          ( void )        { return &m_cs; }
-#endif
-
     void                        JoinPlayer                  ( CPlayer& Player );
     void                        InitialDataStream           ( CPlayer& Player );
     void                        QuitPlayer                  ( CPlayer& Player, CClient::eQuitReasons Reason = CClient::QUIT_QUIT, bool bSayInConsole = true, const char* szKickReason = "None", const char* szResponsiblePlayer = "None" );
@@ -236,11 +232,11 @@ public:
     inline bool                 IsBeingDeleted              ( void )        { return m_bBeingDeleted; }
     void                        ResetMapInfo                ( void );
 
-    void                        SetGlitchEnabled            ( std::string strGlitch, bool bEnabled );
-    bool                        IsGlitchEnabled             ( std::string strGlitch );
+    void                        SetGlitchEnabled            ( const std::string& strGlitch, bool bEnabled );
+    bool                        IsGlitchEnabled             ( const std::string& strGlitch );
     bool                        IsGlitchEnabled             ( eGlitchType cGlitch );
-    eGlitchType                 GetGlitchIndex              ( std::string strGlitch )    { return m_GlitchNames[strGlitch]; }
-    bool                        IsGlitch                    ( std::string strGlitch )    { return m_GlitchNames.count(strGlitch) > 0; }
+    eGlitchType                 GetGlitchIndex              ( const std::string& strGlitch )    { return m_GlitchNames[strGlitch]; }
+    bool                        IsGlitch                    ( const std::string& strGlitch )    { return m_GlitchNames.count(strGlitch) > 0; }
 
     void                        SetCloudsEnabled            ( bool bEnabled );
     bool                        GetCloudsEnabled            ( void );
@@ -290,7 +286,7 @@ private:
     CPacketTranslator*              m_pPacketTranslator;
     CMapManager*                    m_pMapManager;
     CElementDeleter                 m_ElementDeleter;
-    CConnectHistory                 m_ConnectHistory;
+    CConnectHistory                 m_FloodProtect;
     CLuaManager*                    m_pLuaManager;
     CScriptDebugging*               m_pScriptDebugging;
     CConsole*                       m_pConsole;
@@ -317,10 +313,6 @@ private:
     CWaterManager*                  m_pWaterManager;
 
     CSerialManager                  m_SerialManager;
-
-#ifdef WIN32
-    CRITICAL_SECTION            m_cs; // to prevent odd things happening with the http server, I hope
-#endif
 
 #ifdef MTA_VOICE
     CVoiceServer*               m_pVoiceServer;

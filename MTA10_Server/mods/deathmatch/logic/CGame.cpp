@@ -50,10 +50,8 @@ BOOL WINAPI ConsoleEventHandler ( DWORD dwCtrlType )
 
 
 CGame::CGame ( void )
+    : m_FloodProtect( 4, 30000, 30000 )     // Max of 4 connections per 30 seconds, then 30 second ignore
 {
-#ifdef WIN32
-    InitializeCriticalSection(&m_cs);
-#endif
     // Set our global pointer
     g_pGame = this;
 
@@ -148,9 +146,6 @@ void CGame::ResetMapInfo ( void )
 CGame::~CGame ( void )
 {
 	m_bBeingDeleted = true;
-#ifdef WIN32
-    DeleteCriticalSection(&m_cs);
-#endif
 
     // Remove our console control handler
     #ifdef WIN32
@@ -433,14 +428,9 @@ bool CGame::Start ( int iArgumentCount, char* szArguments [] )
         }
     }
 
-    // Eventually set a logfile
-	bool bLogFile = true;
-    if ( m_pMainConfig->GetLogFileEnabled () && !m_pMainConfig->GetLogFile ().empty () )
-    {
-        // Try to set the logfile
-        if ( !CLogger::SetLogFile ( m_pMainConfig->GetLogFile ().c_str () ) )
-			bLogFile = false;
-    }
+    // Eventually set the logfiles
+    bool bLogFile = CLogger::SetLogFile ( m_pMainConfig->GetLogFile ().c_str () );
+    CLogger::SetAuthFile ( m_pMainConfig->GetAuthFile ().c_str () );
 
     // Trim the logfile name for the output
     char szLogFileNameOutput [MAX_PATH];
@@ -1249,7 +1239,7 @@ void CGame::Packet_PlayerJoinData ( CPlayerJoinDataPacket& Packet )
             const MD5& PacketHash = Packet.GetPassword ();
 
             // Hash our password
-            std::string strPassword = m_pMainConfig->GetPassword ();
+            const std::string& strPassword = m_pMainConfig->GetPassword ();
             MD5 ConfigHash;
             CMD5Hasher Hasher;
             if ( !strPassword.empty () && Hasher.Calculate ( strPassword.c_str (), strPassword.length (), ConfigHash ) )
@@ -1309,7 +1299,7 @@ void CGame::Packet_PlayerJoinData ( CPlayerJoinDataPacket& Packet )
                         if ( bPasswordIsValid )
                         {
                             // If he's not join flooding
-                            if ( !m_pMainConfig->GetJoinFloodProtectionEnabled () || !m_ConnectHistory.IsFlooding ( Packet.GetSourceIP() ) )
+                            if ( !m_pMainConfig->GetJoinFloodProtectionEnabled () || !m_FloodProtect.AddConnect ( SString ( "%x", Packet.GetSourceIP() ) ) )
                             {
 								// Set the nick and the game version
 								pPlayer->SetNick ( szNick );
@@ -2763,8 +2753,7 @@ void CGame::PlayerCompleteConnect ( CPlayer* pPlayer, bool bSuccess, const char*
 		}
 
 		// Tell the console
-		//char szIP [22];
-		CLogger::LogPrintf ( "CONNECT: %s connected (IP: %s)\n", pPlayer->GetNick(), pPlayer->GetSourceIP ( szIP ) );
+		CLogger::LogPrintf ( "CONNECT: %s connected (IP: %s  Serial: %s)\n", pPlayer->GetNick(), pPlayer->GetSourceIP ( szIP ), pPlayer->GetSerial ().c_str () );
 
 		// Send him the join details
 		pPlayer->Send ( CPlayerConnectCompletePacket () );
@@ -2794,14 +2783,14 @@ void CGame::Unlock ( void )
     pthread_mutex_unlock ( &mutexhttp );
 }
 
-void CGame::SetGlitchEnabled ( std::string strGlitch, bool bEnabled )
+void CGame::SetGlitchEnabled ( const std::string& strGlitch, bool bEnabled )
 {
     eGlitchType cGlitch = m_GlitchNames[strGlitch];
     assert ( cGlitch >= 0 && cGlitch <= 2 );
     m_Glitches[cGlitch] = bEnabled;
 }
 
-bool CGame::IsGlitchEnabled ( std::string strGlitch )
+bool CGame::IsGlitchEnabled ( const std::string& strGlitch )
 {
     eGlitchType cGlitch = m_GlitchNames[strGlitch];
     assert ( cGlitch >= 0 && cGlitch <= 2 );

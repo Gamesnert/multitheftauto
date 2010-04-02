@@ -3552,7 +3552,7 @@ CClientGUIElement* CStaticFunctionDefinitions::GUICreateWindow ( CLuaMain& LuaMa
 }
 
 
-CClientGUIElement* CStaticFunctionDefinitions::GUICreateStaticImage ( CLuaMain& LuaMain, float fX, float fY, float fWidth, float fHeight, SString strPath, bool bRelative, CClientGUIElement* pParent )
+CClientGUIElement* CStaticFunctionDefinitions::GUICreateStaticImage ( CLuaMain& LuaMain, float fX, float fY, float fWidth, float fHeight, const SString& strPath, bool bRelative, CClientGUIElement* pParent )
 {
 	CGUIElement *pElement = m_pGUI->CreateStaticImage ( pParent ? pParent->GetCGUIElement () : NULL );
 	pElement->SetPosition ( CVector2D ( fX, fY ), bRelative );
@@ -3578,7 +3578,7 @@ CClientGUIElement* CStaticFunctionDefinitions::GUICreateStaticImage ( CLuaMain& 
 }
 
 
-bool CStaticFunctionDefinitions::GUIStaticImageLoadImage ( CClientEntity& Entity, SString strDir )
+bool CStaticFunctionDefinitions::GUIStaticImageLoadImage ( CClientEntity& Entity, const SString& strDir )
 {
     RUN_CHILDREN GUIStaticImageLoadImage ( **iter, strDir );
 
@@ -3942,8 +3942,15 @@ void CStaticFunctionDefinitions::GUISetProperty ( CClientEntity& Entity, const c
     {
         CClientGUIElement& GUIElement = static_cast < CClientGUIElement& > ( Entity );
     
-        // Set the visibility
+        // Set the property
         GUIElement.GetCGUIElement ()->SetProperty ( szProperty, szValue );
+
+        // HACK: If the property being set is AlwaysOnTop, move it to the back so it's not in front of the main menu
+        if (  ( _stricmp ( szProperty, "AlwaysOnTop" ) == 0 ) && 
+              ( _stricmp ( szValue, "True" ) == 0 ) )
+        {
+            GUIElement.GetCGUIElement ()->MoveToBack();
+        }
     }
 }
 
@@ -3961,16 +3968,22 @@ void CStaticFunctionDefinitions::GUISetAlpha ( CClientEntity& Entity, float fAlp
 }
 
 
-void CStaticFunctionDefinitions::GUIBringToFront ( CClientEntity& Entity )
+bool CStaticFunctionDefinitions::GUIBringToFront ( CClientEntity& Entity )
 {
     // Are we a CGUI element?
     if ( IS_GUI ( &Entity ) )
     {
         CClientGUIElement& GUIElement = static_cast < CClientGUIElement& > ( Entity );
-
-        // Bring it to the front
-        GUIElement.GetCGUIElement ()->BringToFront ();
+        // We don't allow AlwaysOnTop GUI to be brought to the front (so it doesn't appear on top of the main menu)
+        std::string strValue = GUIElement.GetCGUIElement ()->GetProperty ( "AlwaysOnTop" );
+        if ( strValue.compare ( "True" ) != 0 )
+        {
+            // Bring it to the front
+            GUIElement.GetCGUIElement ()->BringToFront ();
+            return true;
+        }
     }
+    return false;
 }
 
 
