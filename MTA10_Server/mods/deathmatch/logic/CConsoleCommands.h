@@ -24,7 +24,7 @@ public:
     static bool         Update              ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         StartResource       ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         StopResource        ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-	static bool         StopAllResources    ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         StopAllResources    ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         RestartResource     ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         RefreshResources    ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         RefreshAllResources ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
@@ -41,6 +41,13 @@ public:
     static bool         Me              ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         Nick            ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
+    static bool         LogIn           ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         LogOut          ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         ChgMyPass       ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+
+    static bool         AddAccount      ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         DelAccount      ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         ChgPass         ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
     static bool         Shutdown        ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
     static bool         AExec           ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
@@ -50,13 +57,13 @@ public:
 
     static bool         DebugScript     ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
-	static bool			Sudo			( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         Sudo            ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
-    static bool			Help			( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         Help            ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
-	static bool			LoadModule		( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-	static bool			UnloadModule	( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
-	static bool			ReloadModule	( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         LoadModule      ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         UnloadModule    ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
+    static bool         ReloadModule    ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 
     static bool         Ver             ( class CConsole* pConsole, const char* szArguments, CClient* pClient, CClient* pEchoClient );
 };

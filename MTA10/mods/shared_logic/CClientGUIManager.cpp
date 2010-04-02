@@ -38,7 +38,7 @@ void CClientGUIManager::DeleteAll ( void )
     list < CClientGUIElement* > ::const_iterator iter = m_Elements.begin ();
     for ( ; iter != m_Elements.end (); iter++ )
     {
-		delete *iter;
+        delete *iter;
     }
 
     // Clear the list
@@ -49,17 +49,17 @@ void CClientGUIManager::DeleteAll ( void )
 
 bool CClientGUIManager::Exists ( CClientGUIElement* pGUIElement )
 {
-	if ( pGUIElement ) {
-		// Find the object in the list
-		list < CClientGUIElement* > ::const_iterator iter = m_Elements.begin ();
-		for ( ; iter != m_Elements.end (); iter++ )
-		{
-			if ( *iter == pGUIElement )
-			{
-				return true;
-			}
-		}
-	}
+    if ( pGUIElement ) {
+        // Find the object in the list
+        list < CClientGUIElement* > ::const_iterator iter = m_Elements.begin ();
+        for ( ; iter != m_Elements.end (); iter++ )
+        {
+            if ( *iter == pGUIElement )
+            {
+                return true;
+            }
+        }
+    }
 
     // Doesn't exist
     return false;
@@ -68,17 +68,17 @@ bool CClientGUIManager::Exists ( CClientGUIElement* pGUIElement )
 
 bool CClientGUIManager::Exists ( CGUIElement* pCGUIElement )
 {
-	if ( pCGUIElement ) {
-		// Find the object in the list
-		list < CClientGUIElement* > ::const_iterator iter = m_Elements.begin ();
-		for ( ; iter != m_Elements.end (); iter++ )
-		{
-			if ( (*iter)->GetCGUIElement () == pCGUIElement )
-			{
-				return true;
-			}
-		}
-	}
+    if ( pCGUIElement ) {
+        // Find the object in the list
+        list < CClientGUIElement* > ::const_iterator iter = m_Elements.begin ();
+        for ( ; iter != m_Elements.end (); iter++ )
+        {
+            if ( (*iter)->GetCGUIElement () == pCGUIElement )
+            {
+                return true;
+            }
+        }
+    }
 
     // Doesn't exist
     return false;
@@ -87,17 +87,17 @@ bool CClientGUIManager::Exists ( CGUIElement* pCGUIElement )
 
 CClientGUIElement* CClientGUIManager::Get ( CGUIElement* pCGUIElement )
 {
-	if ( pCGUIElement ) {
-		// Find the object in the list
-		list < CClientGUIElement* > ::const_iterator iter = m_Elements.begin ();
-		for ( ; iter != m_Elements.end (); iter++ )
-		{
-			if ( (*iter)->GetCGUIElement () == pCGUIElement )
-			{
-				return *iter;
-			}
-		}
-	}
+    if ( pCGUIElement ) {
+        // Find the object in the list
+        list < CClientGUIElement* > ::const_iterator iter = m_Elements.begin ();
+        for ( ; iter != m_Elements.end (); iter++ )
+        {
+            if ( (*iter)->GetCGUIElement () == pCGUIElement )
+            {
+                return *iter;
+            }
+        }
+    }
 
     // Doesn't exist
     return NULL;
@@ -106,7 +106,7 @@ CClientGUIElement* CClientGUIManager::Get ( CGUIElement* pCGUIElement )
 
 void CClientGUIManager::Add ( CClientGUIElement* pElement )
 {
-	m_Elements.push_back ( pElement );
+    m_Elements.push_back ( pElement );
 }
 
 
@@ -120,20 +120,20 @@ void CClientGUIManager::Remove ( CClientGUIElement* pGUIElement )
 
 void CClientGUIManager::DoPulse ( void )
 {
-    FlushDeferedUpdates ();
+    FlushQueuedUpdates ();
 }
 
-void CClientGUIManager::DeferGridListUpdate ( CClientGUIElement *pGUIElement )
+void CClientGUIManager::QueueGridListUpdate ( CClientGUIElement *pGUIElement )
 {
     ElementID ID = pGUIElement->GetID ();
-    if ( m_DeferedGridListUpdates.find ( ID ) == m_DeferedGridListUpdates.end () )
-        m_DeferedGridListUpdates[ ID ] = true;
+    if ( m_QueuedGridListUpdates.find ( ID ) == m_QueuedGridListUpdates.end () )
+        m_QueuedGridListUpdates[ ID ] = true;
 }
 
-void CClientGUIManager::FlushDeferedUpdates ()
+void CClientGUIManager::FlushQueuedUpdates ()
 {
-    map < ElementID, bool >::iterator iter = m_DeferedGridListUpdates.begin ();
-    for ( ; iter != m_DeferedGridListUpdates.end () ; ++iter )
+    map < ElementID, bool >::iterator iter = m_QueuedGridListUpdates.begin ();
+    for ( ; iter != m_QueuedGridListUpdates.end () ; ++iter )
     {
         CClientEntity* pEntity = CElementIDs::GetElement ( iter->first );
         if ( pEntity && !pEntity->IsBeingDeleted () && pEntity->GetType () == CCLIENTGUI )
@@ -146,5 +146,5 @@ void CClientGUIManager::FlushDeferedUpdates ()
             }
         }
     }
-    m_DeferedGridListUpdates.clear ();
+    m_QueuedGridListUpdates.clear ();
 }

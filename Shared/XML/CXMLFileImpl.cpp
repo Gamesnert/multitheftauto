@@ -42,7 +42,7 @@ CXMLFileImpl::~CXMLFileImpl ( void )
     ClearWrapperTree ();
 
     // Delete the document and the builder
-	delete m_pDocument;
+    delete m_pDocument;
 }
 
 
@@ -68,15 +68,22 @@ bool CXMLFileImpl::Parse ( void )
     if ( m_strFilename != "" )
     {
         // Reset previous file
-		Reset ();
+        Reset ();
 
         // Parse from the current file
         if ( m_pDocument->LoadFile ( m_strFilename.c_str () ) )
         {
             // Build our wrapper
-		    BuildWrapperTree ();
-		    ResetLastError ();
-		    return true;
+            if ( BuildWrapperTree () )
+            {
+                ResetLastError ();
+                return true;
+            }
+            else
+            {
+                SetLastError ( CXMLErrorCodes::OtherError, "Out of Elements" );
+                return false;
+            }
         }
 
         // Bad XML file
@@ -186,25 +193,31 @@ TiXmlDocument* CXMLFileImpl::GetDocument ( void )
 }
 
 
-void CXMLFileImpl::BuildWrapperTree ( void )
+bool CXMLFileImpl::BuildWrapperTree ( void )
 {
     // Clear the previous tree
     ClearWrapperTree ();
 
     // Grab the root element
-	TiXmlElement* pRootNode = m_pDocument->RootElement ();
-	if ( pRootNode )
+    TiXmlElement* pRootNode = m_pDocument->RootElement ();
+    if ( pRootNode )
     {
         // Create an XML node for it
         m_pRootNode = new CXMLNodeImpl ( this, NULL, *pRootNode );
 
         // And build all sub-nodes
-        BuildSubElements ( m_pRootNode );
+        if ( !BuildSubElements ( m_pRootNode ) )
+        {
+            Reset ( );
+            return false;
+        }
+        return true;
     }
+    return false;
 }
 
 
-void CXMLFileImpl::BuildSubElements ( CXMLNodeImpl* pNode )
+bool CXMLFileImpl::BuildSubElements ( CXMLNodeImpl* pNode )
 {
     // Grab the node
     TiXmlElement* pRawNode = pNode->GetNode ();
@@ -220,11 +233,24 @@ void CXMLFileImpl::BuildSubElements ( CXMLNodeImpl* pNode )
             if ( pElement = pChild->ToElement () )
             {
                 // Create the child and build its subnodes again
-			    CXMLNodeImpl* pTempNode = new CXMLNodeImpl ( this, pNode, *pElement );
-			    BuildSubElements ( pTempNode );
+                CXMLNodeImpl* pTempNode = new CXMLNodeImpl ( this, pNode, *pElement );
+                if ( pTempNode->IsValid ( ) )
+                {
+                    if ( !BuildSubElements ( pTempNode ) )
+                    {
+                        delete pTempNode;
+                        return false;
+                    }
+                }
+                else
+                {
+                    delete pTempNode;
+                    return false;
+                }
             }
-		}
-	}
+        }
+    }
+    return true;
 }
 
 

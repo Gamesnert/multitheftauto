@@ -35,9 +35,10 @@ public:
     bool                IsTitlebarEnabled       ( void );
 
     void                SetCloseClickHandler    ( GUI_CALLBACK Callback );
-	void                SetKeyDownHandler		( GUI_CALLBACK Callback );
+    void                SetKeyDownHandler       ( GUI_CALLBACK Callback );
+    void                SetEnterKeyHandler      ( GUI_CALLBACK Callback );
 
-	eCGUIType			GetType					( void ) { return CGUI_WINDOW; };
+    eCGUIType           GetType                 ( void ) { return CGUI_WINDOW; };
 
     #include "CGUIElement_Inc.h"
 
@@ -47,6 +48,7 @@ protected:
 
     GUI_CALLBACK        m_OnCloseClick;
     GUI_CALLBACK        m_OnKeyDown;
+    GUI_CALLBACK        m_OnEnter;
 };
 
 #endif

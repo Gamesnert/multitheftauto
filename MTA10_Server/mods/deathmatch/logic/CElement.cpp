@@ -231,8 +231,8 @@ void CElement::GetChildren ( lua_State* pLua )
 
 bool CElement::IsMyChild ( CElement* pElement, bool bRecursive )
 {
-	// Since VERIFY_ELEMENT is calling us, the pEntity argument could be NULL
-	if ( pElement == NULL ) return false;
+    // Since VERIFY_ELEMENT is calling us, the pEntity argument could be NULL
+    if ( pElement == NULL ) return false;
 
     // Is he us?
     if ( pElement == this )
@@ -264,7 +264,7 @@ void CElement::ClearChildren ( void )
     assert ( m_pParent != this );
 
     // Process our children - Move up to our parent
-	list < CElement* > cloneList = m_Children;
+    list < CElement* > cloneList = m_Children;
     list < CElement* > ::const_iterator iter = cloneList.begin ();
     for ( ; iter != cloneList.end () ; ++iter )
         (*iter)->SetParentObject ( m_pParent );
@@ -638,7 +638,7 @@ bool CElement::GetCustomDataBool ( const char* szName, bool& bOut, bool bInherit
 }
 
 
-void CElement::SetCustomData ( const char* szName, const CLuaArgument& Variable, CLuaMain* pLuaMain, bool bSynchronized )
+void CElement::SetCustomData ( const char* szName, const CLuaArgument& Variable, CLuaMain* pLuaMain, bool bSynchronized, CPlayer* pClient )
 {
     assert ( szName );
 
@@ -656,8 +656,9 @@ void CElement::SetCustomData ( const char* szName, const CLuaArgument& Variable,
     // Trigger the onElementDataChange event on us
     CLuaArguments Arguments;
     Arguments.PushString ( szName );
-    Arguments.PushArgument ( oldVariable  );
-    CallEvent ( "onElementDataChange", Arguments );
+    Arguments.PushArgument ( oldVariable );
+    Arguments.PushArgument ( Variable );
+    CallEvent ( "onElementDataChange", Arguments, pClient );
 }
 
 
@@ -1081,7 +1082,7 @@ bool CElement::IsAttachable ( void )
         }
         default: break;
     }
-	return false;
+    return false;
 }
 
 
@@ -1103,7 +1104,7 @@ bool CElement::IsAttachToable ( void )
         }
         default: break;
     }
-	return false;
+    return false;
 }
 
 

@@ -109,16 +109,16 @@ bool CAccountManager::Load ( CXMLNode* pParent )
                             if ( pAttribute )
                             {
                                 strIP = pAttribute->GetValue ();
-								CAccount* pAccount = NULL;
-								pAttribute = pAccountNode->GetAttributes ().Find ( "serial" );
-								if ( pAttribute )
-								{
-									pAccount = new CAccount ( this, true, strName, strPassword, strIP, pAttribute->GetValue () );
-								}
-								else
-								{
-	                                pAccount = new CAccount ( this, true, strName, strPassword, strIP );
-								}
+                                CAccount* pAccount = NULL;
+                                pAttribute = pAccountNode->GetAttributes ().Find ( "serial" );
+                                if ( pAttribute )
+                                {
+                                    pAccount = new CAccount ( this, true, strName, strPassword, strIP, pAttribute->GetValue () );
+                                }
+                                else
+                                {
+                                    pAccount = new CAccount ( this, true, strName, strPassword, strIP );
+                                }
 
                                 // Grab the data on this account
                                 CXMLNode* pDataNode = NULL;
@@ -202,19 +202,19 @@ bool CAccountManager::Load ( CXMLNode* pParent )
                                     }
                                 }
                             }
-							else
-							{
-								CAccount* pAccount = NULL;
-								pAttribute = pAccountNode->GetAttributes ().Find ( "serial" );
-								if ( pAttribute )
-								{
-									pAccount = new CAccount ( this, true, strName, strPassword, NULL, pAttribute->GetValue () );
-								}
-								else
-								{
-									pAccount = new CAccount ( this, true, strName, strPassword );
-								}
-							}
+                            else
+                            {
+                                CAccount* pAccount = NULL;
+                                pAttribute = pAccountNode->GetAttributes ().Find ( "serial" );
+                                if ( pAttribute )
+                                {
+                                    pAccount = new CAccount ( this, true, strName, strPassword, NULL, pAttribute->GetValue () );
+                                }
+                                else
+                                {
+                                    pAccount = new CAccount ( this, true, strName, strPassword );
+                                }
+                            }
                         }
                     }
                 }
@@ -335,7 +335,7 @@ bool CAccountManager::Save ( CXMLNode* pParent )
                             pAttribute->SetValue ( szIP );
                     }
 
-					const char* szSerial = (*iter)->GetSerial ().c_str ();
+                    const char* szSerial = (*iter)->GetSerial ().c_str ();
                     if ( szSerial && szSerial [ 0 ] )
                     {
                         pAttribute = pNode->GetAttributes ().Create ( "serial" );
@@ -602,7 +602,7 @@ bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, const char
         if ( pEchoClient ) pEchoClient->SendEcho ( SString( "login: Account for '%s' is already in use", szNick ).c_str() );
         return false;
     }
-    if ( strlen ( szPassword ) > MAX_PASSWORD_LENGTH || !pAccount->IsPassword ( szPassword ) )
+    if ( strlen ( szPassword ) <= MIN_PASSWORD_LENGTH || strlen ( szPassword ) > MAX_PASSWORD_LENGTH || !pAccount->IsPassword ( szPassword ) )
     {
         if ( pEchoClient ) pEchoClient->SendEcho ( SString( "login: Invalid password for account '%s'", szNick ).c_str() );
         CLogger::AuthPrintf ( "LOGIN: %s tried to log in as '%s' with an invalid password (IP: %s  Serial: %s)\n", strPlayerName.c_str (), szNick, strPlayerIP.c_str (), strPlayerSerial.c_str () );
@@ -667,8 +667,15 @@ bool CAccountManager::LogIn ( CClient* pClient, CClient* pEchoClient, CAccount* 
         }
     }
 
-    // Tell the console
-    CLogger::AuthPrintf ( "LOGIN: %s successfully logged in as '%s' (IP: %s  Serial: %s)\n", pClient->GetNick (), pAccount->GetName ().c_str (), strPlayerIP.c_str (), strPlayerSerial.c_str () );
+    // Get the names of the groups the client belongs to - I did it like this for a larf
+    string strGroupList;
+    for ( list <CAccessControlListGroup* > ::const_iterator iterg = g_pGame->GetACLManager ()->Groups_Begin () ; iterg != g_pGame->GetACLManager ()->Groups_End (); iterg++ )
+        for ( list <CAccessControlListGroupObject* > ::iterator itero = (*iterg)->IterBeginObjects () ; itero != (*iterg)->IterEndObjects (); itero++ )
+            if ( (*itero)->GetObjectType () == CAccessControlListGroupObject::OBJECT_TYPE_USER )
+                if ( (*itero)->GetObjectName () == pAccount->GetName () || strcmp ( (*itero)->GetObjectName (), "*" ) == 0 )
+                    strGroupList = string( (*iterg)->GetGroupName () ) + ( strGroupList.length() ? ", " : "" ) + strGroupList;
+
+    CLogger::AuthPrintf ( "LOGIN: (%s) %s successfully logged in as '%s' (IP: %s  Serial: %s)\n", strGroupList.c_str (), pClient->GetNick (), pAccount->GetName ().c_str (), strPlayerIP.c_str (), strPlayerSerial.c_str () );
 
     // Tell the player
     if ( pEchoClient )

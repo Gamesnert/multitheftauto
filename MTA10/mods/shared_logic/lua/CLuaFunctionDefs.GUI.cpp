@@ -14,6 +14,7 @@
 *               Christian Myhre Lundheim <>
 *               Stanislav Bobrov <lil_toady@hotmail.com>
 *               Alberto Alonso <rydencillo@gmail.com>
+*               Florian Busse <flobu@gmx.net>
 *
 *****************************************************************************/
 
@@ -33,7 +34,7 @@ int CLuaFunctionDefs::GUISetInputEnabled ( lua_State* luaVM )
     if ( lua_istype ( luaVM, 1, LUA_TBOOLEAN ) ) {
         CStaticFunctionDefinitions::GUISetInputEnabled ( lua_toboolean ( luaVM, 1 ) ? true : false );
         bRet = true;
-    }	// else: error, bad arguments
+    }   // else: error, bad arguments
 
     lua_pushboolean ( luaVM, bRet );
     return 1;
@@ -207,7 +208,7 @@ int CLuaFunctionDefs::GUICreateButton ( lua_State* luaVM )
     {
         if ( lua_istype ( luaVM, 1, LUA_TNUMBER ) && lua_istype ( luaVM, 2, LUA_TNUMBER ) &&
             lua_istype ( luaVM, 3, LUA_TNUMBER ) && lua_istype ( luaVM, 4, LUA_TNUMBER ) &&
-            lua_istype ( luaVM, 5, LUA_TSTRING ) && lua_istype ( luaVM, 6, LUA_TBOOLEAN ) )	// ACHTUNG: EVENTS!
+            lua_istype ( luaVM, 5, LUA_TSTRING ) && lua_istype ( luaVM, 6, LUA_TBOOLEAN ) ) // ACHTUNG: EVENTS!
         {
             const char *szCaption = lua_tostring ( luaVM, 5 );
             //const char *szOnClick = lua_istype ( luaVM, 8, LUA_TSTRING ) ? lua_tostring ( luaVM, 8 ) : NULL;
@@ -993,7 +994,7 @@ int CLuaFunctionDefs::GUIProgressBarGetProgress ( lua_State* luaVM )
         CClientGUIElement *pGUIElement = lua_toguielement ( luaVM, 1 );
         if ( pGUIElement && IS_CGUIELEMENT_PROGRESSBAR ( pGUIElement ) )
         {
-            int iProgress = ( int ) ( static_cast < CGUIProgressBar* > ( pGUIElement->GetCGUIElement () ) -> GetProgress () * 100.0f );
+            int iProgress = ( int ) ( static_cast < CGUIProgressBar* > ( pGUIElement->GetCGUIElement () ) -> GetProgress () * 100.0f + 0.5f );
             lua_pushnumber ( luaVM, iProgress );
             return 1;
         }
@@ -1548,7 +1549,7 @@ int CLuaFunctionDefs::GUIGridListAddRow ( lua_State* luaVM )
         {
             iRet = CStaticFunctionDefinitions::GUIGridListAddRow ( *pGUIElement, true );
             if ( iRet >= 0 ) {
-                m_pGUIManager->DeferGridListUpdate ( pGUIElement );
+                m_pGUIManager->QueueGridListUpdate ( pGUIElement );
                 lua_pushnumber ( luaVM, iRet );
                 return 1;
             }
@@ -1858,6 +1859,32 @@ int CLuaFunctionDefs::GUIGridListGetItemData ( lua_State* luaVM )
 }
 
 
+int CLuaFunctionDefs::GUIGridListGetItemColor ( lua_State* luaVM )
+{
+    if ( lua_isuserdata ( luaVM, 1 ) && lua_isnumber ( luaVM, 2 ) && lua_isnumber ( luaVM, 3 ) )
+    {
+        CClientGUIElement* pGUIElement = lua_toguielement ( luaVM, 1 );
+        if ( pGUIElement )
+        {
+            unsigned char ucRed = 255, ucGreen = 255, ucBlue = 255, ucAlpha = 255;
+            if ( reinterpret_cast < const char* > ( static_cast < CGUIGridList* > ( pGUIElement->GetCGUIElement () ) -> GetItemColor ( lua_tointeger ( luaVM, 2 ), lua_tointeger ( luaVM, 3 ), ucRed, ucGreen, ucBlue, ucAlpha ) ) )
+            {
+                lua_pushnumber ( luaVM, ucRed );
+                lua_pushnumber ( luaVM, ucGreen );
+                lua_pushnumber ( luaVM, ucBlue );
+                lua_pushnumber ( luaVM, ucAlpha );
+                return 4;
+            }
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "guiGridListGetItemColor", "gui-element", 1 );
+    }
+
+    lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+
 int CLuaFunctionDefs::GUIGridListSetItemText ( lua_State* luaVM )
 {
     if ( lua_istype ( luaVM, 1, LUA_TLIGHTUSERDATA ) &&
@@ -1879,7 +1906,7 @@ int CLuaFunctionDefs::GUIGridListSetItemText ( lua_State* luaVM )
                 lua_toboolean ( luaVM, 6 ) ? true : false,
                 true
             );
-            m_pGUIManager->DeferGridListUpdate ( pGUIElement );
+            m_pGUIManager->QueueGridListUpdate ( pGUIElement );
             lua_pushboolean ( luaVM, true );
             return 1;
         }
@@ -1918,6 +1945,33 @@ int CLuaFunctionDefs::GUIGridListSetItemData ( lua_State* luaVM )
     }
 
     // error: bad arguments
+    lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+
+int CLuaFunctionDefs::GUIGridListSetItemColor ( lua_State* luaVM )
+{
+    if ( lua_isuserdata ( luaVM, 1 ) && lua_isnumber ( luaVM, 2 ) && lua_isnumber ( luaVM, 3 ) && lua_isnumber ( luaVM, 4 ) && lua_isnumber ( luaVM, 5 ) && lua_isnumber ( luaVM, 6 ) )
+    {
+        CClientGUIElement* pGUIElement = lua_toguielement ( luaVM, 1 );
+        if ( pGUIElement )
+        {
+            int iAlpha = 255;
+            if ( lua_isnumber ( luaVM, 7 ) )
+            {
+                iAlpha = lua_tointeger ( luaVM, 7 );
+            }
+            CStaticFunctionDefinitions::GUIGridListSetItemColor( *pGUIElement, lua_tointeger ( luaVM, 2 ), lua_tointeger ( luaVM, 3 ), lua_tointeger ( luaVM, 4 ), lua_tointeger ( luaVM, 5 ), lua_tointeger ( luaVM, 6 ), iAlpha );
+
+            m_pGUIManager->QueueGridListUpdate ( pGUIElement );
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "guiGridListSetItemColor", "gui-element", 1 );
+    }
+
     lua_pushboolean ( luaVM, false );
     return 1;
 }
@@ -1970,7 +2024,7 @@ int CLuaFunctionDefs::GUIScrollPaneSetScrollBars ( lua_State* luaVM )
 int CLuaFunctionDefs::GUIGridListGetRowCount ( lua_State* luaVM )
 {
     if ( lua_istype ( luaVM, 1, LUA_TLIGHTUSERDATA ) )
-    {		
+    {       
         CClientGUIElement *pGUIElement = lua_toguielement ( luaVM, 1 );
         if ( pGUIElement && IS_CGUIELEMENT_GRIDLIST ( pGUIElement ) )
         {
@@ -2258,7 +2312,7 @@ int CLuaFunctionDefs::GUILabelSetColor ( lua_State* luaVM )
         CClientEntity* pEntity = lua_toelement ( luaVM, 1 );
         if ( pEntity )
         {
-            CStaticFunctionDefinitions::GUILabelSetColor (	*pEntity,
+            CStaticFunctionDefinitions::GUILabelSetColor (  *pEntity,
                 static_cast < int > ( lua_tonumber ( luaVM, 2 ) ),
                 static_cast < int > ( lua_tonumber ( luaVM, 3 ) ),
                 static_cast < int > ( lua_tonumber ( luaVM, 4 ) ) );
@@ -2392,3 +2446,67 @@ int CLuaFunctionDefs::GUILabelSetHorizontalAlign ( lua_State* luaVM )
     return 1;
 }
 
+
+int CLuaFunctionDefs::GUIGetChatboxLayout ( lua_State* luaVM )
+{
+    if ( lua_istype ( luaVM, 1, LUA_TSTRING ) )
+    {
+        std::string strCVAR;
+        std::string strCVARCommand = ( std::string ) lua_tostring ( luaVM, 1 );
+
+        g_pCore->GetCVars ()->Get ( strCVARCommand, strCVAR );
+        if ( !strCVAR.empty() )
+        {
+            char szSet [] = ".1234567890";
+            if ( strspn ( strCVAR.c_str (), szSet ) == strlen ( strCVAR.c_str () ) && !strCVAR.empty () )
+            {
+                float fNumber = static_cast < float > ( atof ( strCVAR.c_str() ) );
+                if ( fNumber >= 0 )
+                {
+                    lua_pushnumber ( luaVM, fNumber );
+                    return 1;
+                }
+            }
+            else if ( strCVARCommand.find("color") != std::string::npos )
+            {
+                char strColor[32] = { '\0' };
+                strcpy ( strColor, strCVAR.c_str() );
+
+                int iRed    = atoi ( strtok ( strColor, " " ) );
+                int iGreen  = atoi ( strtok ( NULL, " " ) );
+                int iBlue   = atoi ( strtok ( NULL, " " ) );
+                int iAlpha  = atoi ( strtok ( NULL, "\r" ) );
+
+                if ( iRed >= 0 && iGreen >= 0 && iBlue >= 0 && iAlpha >= 0 )
+                {
+                    lua_pushnumber ( luaVM, iRed );
+                    lua_pushnumber ( luaVM, iGreen );
+                    lua_pushnumber ( luaVM, iBlue );
+                    lua_pushnumber ( luaVM, iAlpha );
+                    return 4;
+                }
+            }
+            else if ( strCVARCommand == "chat_scale" )
+            {
+                char strPos[16] = { '\0' };
+                strcpy ( strPos, strCVAR.c_str() );
+
+                int iX = atoi ( strtok ( strPos, " " ) );
+                int iY = atoi ( strtok ( NULL, "\r" ) );
+
+                if ( iX >= 0 && iY >= 0 )
+                {
+                    lua_pushnumber ( luaVM, iX );
+                    lua_pushnumber ( luaVM, iY );
+                    return 2;
+                }
+            }
+        }
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getChatboxLayout" );
+
+    // error: bad arguments
+    lua_pushboolean ( luaVM, false );
+    return 1;
+}

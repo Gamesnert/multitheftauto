@@ -1,10 +1,10 @@
 /*****************************************************************************
 *
-*  PROJECT:		Multi Theft Auto v1.0
-*  LICENSE:		See LICENSE in the top level directory
-*  FILE:		core/CChat.h
-*  PURPOSE:		Header file for the chatbox class
-*  DEVELOPERS:	Jax <>
+*  PROJECT:     Multi Theft Auto v1.0
+*  LICENSE:     See LICENSE in the top level directory
+*  FILE:        core/CChat.h
+*  PURPOSE:     Header file for the chatbox class
+*  DEVELOPERS:  Jax <>
 *
 *  Multi Theft Auto is available from http://www.multitheftauto.com/
 *
@@ -163,10 +163,13 @@ public:
     void                        SetInputColor           ( CColor& Color );
     void                        SetTextColor            ( CColor& Color )   { m_TextColor = Color; };
     void                        SetNumLines             ( unsigned int uiNumLines );
+
+    void                        Scroll                  ( int iState )  { m_iScrollState = iState; };
     void                        ScrollUp                ( void );
     void                        ScrollDown              ( void );
 
     void                        SetChatFont             ( eChatFont Font );
+    void                        OnModLoad               ( void );
 
 private:
     void                        LoadCVars               ( void );
@@ -176,6 +179,7 @@ protected:
     void                        UpdateSmoothScroll      ( float* pfPixelScroll, int *piLineScroll );
 
     CChatLine                   m_Lines [ CHAT_MAX_LINES ];     // Circular buffer
+    int                         m_iScrollState;                 // 1 up, 0 stop, -1 down 
     unsigned int                m_uiMostRecentLine;
     unsigned int                m_uiScrollOffset;
     float                       m_fSmoothScroll;

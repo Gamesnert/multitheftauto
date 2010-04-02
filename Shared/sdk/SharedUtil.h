@@ -13,6 +13,15 @@
 
 #pragma once
 #include "SString.h"
+#include <list>
+#include <vector>
+#include <map>
+#include <deque>
+
+//
+// System wide defines
+//
+#define WITH_VEHICLE_HANDLING 0
 
 //
 // _vsnprintf with buffer full check
@@ -97,7 +106,7 @@ namespace SharedUtil
 
     // Lerps between two values depending on the weight
     template< class T >
-    T Lerp ( T& from, float fAlpha, T& to )
+    T Lerp ( const T& from, float fAlpha, const T& to )
     {
         return ( to - from ) * fAlpha + from;
     }
@@ -122,6 +131,96 @@ namespace SharedUtil
     {
         return static_cast < int > ( floor ( value + 0.5f ) );
     }
+
+
+
+    //
+    // Container helpers for std::list/vector/map
+    //
+
+    //
+    // std::list helpers
+    //
+
+    // Returns true if the item is in the itemList
+    template < class T >
+    bool ListContains ( const std::list < T >& itemList, const T& item )
+    {
+        typename std::list < T > ::const_iterator it = itemList.begin ();
+        for ( ; it != itemList.end () ; ++it )
+            if ( item == *it )
+                return true;
+        return false;
+    }
+
+
+    //
+    // std::vector helpers
+    //
+
+    // Returns true if the item is in the itemList
+    template < class T >
+    bool ListContains ( const std::vector < T >& itemList, const T& item )
+    {
+        typename std::vector < T > ::const_iterator it = itemList.begin ();
+        for ( ; it != itemList.end () ; ++it )
+            if ( item == *it )
+                return true;
+        return false;
+    }
+
+    // Remove first occurrence of item from itemList
+    template < class T >
+    void ListRemove ( std::vector < T >& itemList, const T& item )
+    {
+        typename std::vector < T > ::iterator it = itemList.begin ();
+        for ( ; it != itemList.end () ; ++it )
+            if ( item == *it )
+            {
+                itemList.erase ( it );
+                break;
+            }
+    }
+
+
+    //
+    // std::map helpers
+    //
+
+    // Update or add a value for a key
+    template < class T, class V, class TR, class T2 >
+    void MapSet ( std::map < T, V, TR >& collection, const T2& key, const V& value )
+    {
+        collection[ key ] = value;
+    }
+
+    // Returns true if the item is in the collection
+    template < class T, class V, class TR, class T2 >
+    bool MapContains ( const std::map < T, V, TR >& collection, const T2& key )
+    {
+        return collection.find ( key ) != collection.end ();
+    }
+
+    // Remove key from collection
+    template < class T, class V, class TR, class T2 >
+    void MapRemove ( std::map < T, V, TR >& collection, const T2& key )
+    {
+        typename std::map < T, V, TR > ::iterator it = collection.find ( key );
+        if ( it != collection.end () )
+            collection.erase ( it );
+    }
+
+    // Find value in collection
+    template < class T, class V, class TR, class T2 >
+    V* MapFind ( std::map < T, V, TR >& collection, const T2& key )
+    {
+        typename std::map < T, V, TR > ::iterator it = collection.find ( key );
+        if ( it != collection.end () )
+            return NULL;
+        return &it->second;
+    }
+
+
 
 
     //
@@ -231,6 +330,50 @@ namespace SharedUtil
     // string stuff
     //
     std::string RemoveColorCode ( const char* szString );
+
+
+    //
+    // ID 'stack'
+    //
+    template < typename T, unsigned long MAX_STACK_SIZE, T INVALID_STACK_ID >
+    class CStack
+    {
+    public:
+        inline CStack ( void )
+        {
+            // Initialize with valid ID's
+            for ( T i = 0; i < MAX_STACK_SIZE - 1; ++i )
+            {
+                m_Queue.push_back( MAX_STACK_SIZE - 1 - i );
+            }
+        }
+
+        inline T Pop ( void )
+        {
+            // Got any items? Pop from the back
+            if ( m_Queue.size () > 0 )
+            {
+                T ID = m_Queue.back();
+                m_Queue.pop_back ();
+                return ID;
+            }
+
+            // No IDs left
+            return INVALID_STACK_ID;
+        }
+
+        inline void Push ( T ID )
+        {
+            assert ( m_Queue.size () < MAX_STACK_SIZE - 1 );
+            assert ( ID != INVALID_STACK_ID );
+            // Push to the front
+            return m_Queue.push_front ( ID );
+        }
+
+    private:
+        std::deque < T >    m_Queue;
+    };
+
 
 };
 

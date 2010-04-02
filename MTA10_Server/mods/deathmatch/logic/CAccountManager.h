@@ -38,9 +38,9 @@ public:
     CAccount*                   Get                         ( const char* szName, bool bRegistered = true );
     CAccount*                   Get                         ( const char* szName, const char* szIP );
     bool                        Exists                      ( CAccount* pAccount );
-    bool                        LogIn                       ( CClient* pClient, const char* szNick, const char* szPassword );
-    bool                        LogIn                       ( CClient* pClient, CAccount* pAccount, bool bAutoLogin = false );
-    bool                        LogOut                      ( CClient* pClient);
+    bool                        LogIn                       ( CClient* pClient, CClient* pEchoClient, const char* szNick, const char* szPassword );
+    bool                        LogIn                       ( CClient* pClient, CClient* pEchoClient, CAccount* pAccount, bool bAutoLogin = false );
+    bool                        LogOut                      ( CClient* pClient, CClient* pEchoClient );
 
     inline bool                 IsAutoLoginEnabled          ( void )                    { return m_bAutoLogin; }
     inline bool                 SetAutoLoginEnabled         ( bool bEnabled )           { m_bAutoLogin = bEnabled; return bEnabled; }

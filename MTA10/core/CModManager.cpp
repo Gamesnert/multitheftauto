@@ -17,10 +17,10 @@
 using SharedUtil::CalcMTASAPath;
 
 typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE DumpType,
-									CONST PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
-									CONST PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
-									CONST PMINIDUMP_CALLBACK_INFORMATION CallbackParam
-									);
+                                    CONST PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
+                                    CONST PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
+                                    CONST PMINIDUMP_CALLBACK_INFORMATION CallbackParam
+                                    );
 
 template<> CModManager * CSingleton < CModManager > ::m_pSingleton = NULL;
 
@@ -83,8 +83,7 @@ void CModManager::RequestLoadDefault ( const char* szArguments )
 void CModManager::RequestUnload ( void )
 {
     RequestLoad ( NULL, NULL );
-	CCore::GetSingletonPtr () -> OnModUnload ();
-    CLocalGUI::GetSingleton ().OnModUnload ();
+    CCore::GetSingletonPtr () -> OnModUnload ();
 }
 
 
@@ -174,6 +173,9 @@ CClientBase* CModManager::Load ( const char* szName, const char* szArguments )
     // HACK: make the console input active if its visible
     if ( CLocalGUI::GetSingleton ().IsConsoleVisible () )
         CLocalGUI::GetSingleton ().GetConsole ()->ActivateInput ();
+
+    // Tell chat to start handling input
+    CLocalGUI::GetSingleton ().GetChat ()->OnModLoad ();
  
     // Return the interface
     return m_pClientBase;
@@ -201,7 +203,6 @@ void CModManager::Unload ( void )
 
         // Call the on mod unload func
         CCore::GetSingletonPtr () -> OnModUnload ();
-        CLocalGUI::GetSingleton ().OnModUnload ();
 
         // Reset chatbox status (so it won't prevent further input), and clear it
         /*CLocalGUI::GetSingleton ().GetChatBox ()->SetInputEnabled ( false );
@@ -426,34 +427,34 @@ void CModManager::DumpCoreLog ( CExceptionInformation* pExceptionInformation )
 
 void CModManager::DumpMiniDump ( _EXCEPTION_POINTERS* pException )
 {
-	// Try to load the DLL in our directory
-	HMODULE hDll = NULL;
-	char szDbgHelpPath [MAX_PATH];
-	if ( GetModuleFileName ( NULL, szDbgHelpPath, MAX_PATH ) )
-	{
-		char* pSlash = _tcsrchr ( szDbgHelpPath, '\\' );
-		if ( pSlash )
-		{
-			_tcscpy ( pSlash + 1, "DBGHELP.DLL" );
-			hDll = LoadLibrary ( szDbgHelpPath );
-		}
-	}
+    // Try to load the DLL in our directory
+    HMODULE hDll = NULL;
+    char szDbgHelpPath [MAX_PATH];
+    if ( GetModuleFileName ( NULL, szDbgHelpPath, MAX_PATH ) )
+    {
+        char* pSlash = _tcsrchr ( szDbgHelpPath, '\\' );
+        if ( pSlash )
+        {
+            _tcscpy ( pSlash + 1, "DBGHELP.DLL" );
+            hDll = LoadLibrary ( szDbgHelpPath );
+        }
+    }
 
     // If we couldn't load the one in our dir, load any version available
-	if ( !hDll )
-	{
-		hDll = LoadLibrary( "DBGHELP.DLL" );
-	}
+    if ( !hDll )
+    {
+        hDll = LoadLibrary( "DBGHELP.DLL" );
+    }
 
     // We could load a dll?
-	if ( hDll )
-	{
+    if ( hDll )
+    {
         // Grab the MiniDumpWriteDump proc address
-		MINIDUMPWRITEDUMP pDump = reinterpret_cast < MINIDUMPWRITEDUMP > ( GetProcAddress( hDll, "MiniDumpWriteDump" ) );
-		if ( pDump )
-		{
-			// Create the file
-			HANDLE hFile = CreateFile ( CalcMTASAPath ( "mta\\core.dmp" ), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+        MINIDUMPWRITEDUMP pDump = reinterpret_cast < MINIDUMPWRITEDUMP > ( GetProcAddress( hDll, "MiniDumpWriteDump" ) );
+        if ( pDump )
+        {
+            // Create the file
+            HANDLE hFile = CreateFile ( CalcMTASAPath ( "mta\\core.dmp" ), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
             if ( hFile != INVALID_HANDLE_VALUE )
             {
                 // Create an exception information struct
@@ -486,12 +487,12 @@ void CModManager::DumpMiniDump ( _EXCEPTION_POINTERS* pException )
 
                 // Copy the file
                 CopyFile ( CalcMTASAPath ( "mta\\core.dmp" ), CalcMTASAPath ( strFilename ), false );
-			}
-		}
+            }
+        }
 
         // Free the DLL again
         FreeLibrary ( hDll );
-	}
+    }
 }
 
 void CModManager::RunErrorTool ( CExceptionInformation* pExceptionInformation )

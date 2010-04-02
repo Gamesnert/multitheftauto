@@ -36,7 +36,9 @@ public:
     void                        RemoveTimer                     ( CLuaTimer* pLuaTimer );
     void                        RemoveAllTimers                 ( void );
 
-	void						GetTimers						( unsigned long ulTime, CLuaMain* pLuaMain );
+    void                        ResetTimer                      ( CLuaTimer* pLuaTimer );
+
+    void                        GetTimers                       ( unsigned long ulTime, CLuaMain* pLuaMain );
 
     void                        TakeOutTheTrash                 ( void );
 private:

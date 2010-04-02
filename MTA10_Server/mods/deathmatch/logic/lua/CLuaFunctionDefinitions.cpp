@@ -28,34 +28,34 @@ extern CGame* g_pGame;
 // Custom Lua stack argument->reference function
 // This function should always be called last! (Since it pops the lua stack)
 LUALIB_API int luaM_toref (lua_State *L, int i) {
-	int ref = -1;
+    int ref = -1;
 
-	// convert the function pointer to a string so we can use it as index
-	char buf[10] = {0};
-	char * index = itoa ( (int)lua_topointer ( L, i ), buf, 16 );
+    // convert the function pointer to a string so we can use it as index
+    char buf[10] = {0};
+    char * index = itoa ( (int)lua_topointer ( L, i ), buf, 16 );
 
-	// get the callback table we made in CLuaMain::InitVM (at location 1)
-	lua_getref ( L, 1 );
-		lua_getfield ( L, -1, index );
-		ref = (int)lua_tonumber ( L, -1 );
-		lua_pop ( L, 1 );
-	lua_pop ( L, 1 );
+    // get the callback table we made in CLuaMain::InitVM (at location 1)
+    lua_getref ( L, 1 );
+        lua_getfield ( L, -1, index );
+        ref = (int)lua_tonumber ( L, -1 );
+        lua_pop ( L, 1 );
+    lua_pop ( L, 1 );
 
-	// if it wasn't added yet, add it to the callback table and the registry
-	// else, get the reference from the table
-	if ( !ref ) {
-		// add a new reference (and get the id)
-		lua_settop ( L, i );
-		ref = lua_ref ( L, 1 );
+    // if it wasn't added yet, add it to the callback table and the registry
+    // else, get the reference from the table
+    if ( !ref ) {
+        // add a new reference (and get the id)
+        lua_settop ( L, i );
+        ref = lua_ref ( L, 1 );
 
-		// and add it to the callback table
-		lua_getref ( L, 1 );
-			lua_pushstring ( L, index );
-			lua_pushnumber ( L, ref );
-			lua_settable ( L, -3 );
-		lua_pop ( L, 1 );
-	}
-	return ref;
+        // and add it to the callback table
+        lua_getref ( L, 1 );
+            lua_pushstring ( L, index );
+            lua_pushnumber ( L, ref );
+            lua_settable ( L, -3 );
+        lua_pop ( L, 1 );
+    }
+    return ref;
 }
 
 
@@ -178,10 +178,10 @@ void CLuaFunctionDefinitions::SetACL ( CAccessControlListManager* pACLManager )
 
 int CLuaFunctionDefinitions::DisabledFunction ( lua_State* luaVM )
 {
-	m_pScriptDebugging->LogError ( luaVM, "Unsafe function was called." );
+    m_pScriptDebugging->LogError ( luaVM, "Unsafe function was called." );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
@@ -205,7 +205,7 @@ int CLuaFunctionDefinitions::CallRemote ( lua_State* luaVM )
             args.ReadArguments ( luaVM, 5 );
             int iLuaFunction = luaM_toref ( luaVM, 4 ); // you have to read this last or ReadArguments (above) fails
 
-			g_pGame->GetRemoteCalls()->Call ( szHost, szResourceName, szFunctionName, &args, luaMain, iLuaFunction );
+            g_pGame->GetRemoteCalls()->Call ( szHost, szResourceName, szFunctionName, &args, luaMain, iLuaFunction );
             lua_pushboolean ( luaVM, true );
             return 1;
         }
@@ -218,7 +218,7 @@ int CLuaFunctionDefinitions::CallRemote ( lua_State* luaVM )
             args.ReadArguments ( luaVM, 3 );
             int iLuaFunction = luaM_toref ( luaVM, 2 ); // you have to read this last or ReadArguments (above) fails
 
-			g_pGame->GetRemoteCalls()->Call ( szURL, &args, luaMain, iLuaFunction );
+            g_pGame->GetRemoteCalls()->Call ( szURL, &args, luaMain, iLuaFunction );
             lua_pushboolean ( luaVM, true );
             return 1;
         }
@@ -409,7 +409,7 @@ int CLuaFunctionDefinitions::AddEventHandler ( lua_State* luaVM )
                 // Grab the arguments
                 const char* szName = lua_tostring ( luaVM, 1 );
                 CElement* pElement = lua_toelement ( luaVM, 2 );
-				int iLuaFunction = luaM_toref ( luaVM, 3 );
+                int iLuaFunction = luaM_toref ( luaVM, 3 );
 
                 // Verify the element
                 if ( !pElement )
@@ -419,9 +419,9 @@ int CLuaFunctionDefinitions::AddEventHandler ( lua_State* luaVM )
                     return 1;
                 }
 
-				if ( !VERIFY_FUNCTION ( iLuaFunction ) )
-					m_pScriptDebugging->LogBadPointer ( luaVM, "addEventHandler", "function", 3 );
-				else {
+                if ( !VERIFY_FUNCTION ( iLuaFunction ) )
+                    m_pScriptDebugging->LogBadPointer ( luaVM, "addEventHandler", "function", 3 );
+                else {
                     // check if the handle is in use
                     if ( pElement->GetEventManager()->HandleExists ( pLuaMain, szName, iLuaFunction ) )
                     {
@@ -461,14 +461,14 @@ int CLuaFunctionDefinitions::RemoveEventHandler ( lua_State* luaVM )
             // Grab the arguments
             const char* szName = lua_tostring ( luaVM, 1 );
             CElement* pElement = lua_toelement ( luaVM, 2 );
-			int iLuaFunction = luaM_toref ( luaVM, 3 );
+            int iLuaFunction = luaM_toref ( luaVM, 3 );
 
             // Verify the element
             if ( !pElement )
-				m_pScriptDebugging->LogBadPointer ( luaVM, "removeEventHandler", "element", 2 );
-			else if ( !VERIFY_FUNCTION ( iLuaFunction ) )
-				m_pScriptDebugging->LogBadPointer ( luaVM, "removeEventHandler", "function", 3 );
-			else {
+                m_pScriptDebugging->LogBadPointer ( luaVM, "removeEventHandler", "element", 2 );
+            else if ( !VERIFY_FUNCTION ( iLuaFunction ) )
+                m_pScriptDebugging->LogBadPointer ( luaVM, "removeEventHandler", "function", 3 );
+            else {
                 // Do it
                 if ( CStaticFunctionDefinitions::RemoveEventHandler ( pLuaMain, szName, pElement, iLuaFunction ) )
                 {
@@ -557,7 +557,7 @@ int CLuaFunctionDefinitions::TriggerClientEvent ( lua_State* luaVM )
                 m_pScriptDebugging->LogBadPointer ( luaVM, "triggerClientEvent", "element", iStartingArgument + 1 );
         }
         else
-            m_pScriptDebugging->LogBadPointer ( luaVM, "triggerClientEvent", "name", iStartingArgument );
+            m_pScriptDebugging->LogBadPointer ( luaVM, "triggerClientEvent", "element", 1 );
     }
     else
         m_pScriptDebugging->LogBadType ( luaVM, "triggerClientEvent" );
@@ -705,23 +705,23 @@ int CLuaFunctionDefinitions::CreatePed ( lua_State* luaVM )
             bSynced = ( lua_toboolean ( luaVM, 6 ) ) ? true : false;
         }
 
-		CLuaMain * pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource * pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create the ped and return its handle
-				CPed* pPed = CStaticFunctionDefinitions::CreatePed ( pResource, usModel, vecPosition, fRotation, bSynced );
-				if ( pPed )
-				{
+        CLuaMain * pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource * pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create the ped and return its handle
+                CPed* pPed = CStaticFunctionDefinitions::CreatePed ( pResource, usModel, vecPosition, fRotation, bSynced );
+                if ( pPed )
+                {
                     CElementGroup * pGroup = pResource->GetElementGroup();
                     if ( pGroup )
                     {
                         pGroup->Add ( pPed );
                     }
-		            lua_pushelement ( luaVM, pPed );
-					return 1;
+                    lua_pushelement ( luaVM, pPed );
+                    return 1;
                 }
             }
         }
@@ -823,7 +823,7 @@ int CLuaFunctionDefinitions::IsPedDoingGangDriveby ( lua_State* luaVM )
             bool bDriveby;
             if ( CStaticFunctionDefinitions::IsPedDoingGangDriveby ( pPed, bDriveby ) )
             {
-                lua_pushnumber ( luaVM, bDriveby );
+                lua_pushboolean ( luaVM, bDriveby );
                 return 1;
             }
         }
@@ -833,7 +833,7 @@ int CLuaFunctionDefinitions::IsPedDoingGangDriveby ( lua_State* luaVM )
     else
         m_pScriptDebugging->LogBadType ( luaVM, "isPedDoingGangDriveby" );
 
-    lua_pushnumber ( luaVM, false );
+    lua_pushboolean ( luaVM, false );
     return 1;
 }
 
@@ -922,7 +922,7 @@ int CLuaFunctionDefinitions::SetPedAnimation ( lua_State* luaVM )
         // Grab the element
         CElement * pElement = lua_toelement ( luaVM, 1 );
         if ( pElement )
-		{
+        {
             const char * szBlockName = NULL;
             const char * szAnimName = NULL;
             int iTime = -1;
@@ -943,19 +943,19 @@ int CLuaFunctionDefinitions::SetPedAnimation ( lua_State* luaVM )
 
             if ( CStaticFunctionDefinitions::SetPedAnimation ( pElement, szBlockName, szAnimName, iTime, bLoop, bUpdatePosition, bInterruptable ) )
             {
-			    lua_pushboolean ( luaVM, true );
+                lua_pushboolean ( luaVM, true );
                 return 1;
             }
         }
         else
             m_pScriptDebugging->LogBadPointer ( luaVM, "setPedAnimation", "element", 1 );
-	}
+    }
     else
         m_pScriptDebugging->LogBadType ( luaVM, "setPedAnimation" );
 
     // Failed
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
@@ -967,8 +967,8 @@ int CLuaFunctionDefinitions::SetPedWeaponSlot ( lua_State* luaVM )
         // Grab the element
         CElement * pElement = lua_toelement ( luaVM, 1 );
         if ( pElement )
-		{
-		    unsigned char ucSlot = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
+        {
+            unsigned char ucSlot = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
 
             if ( CStaticFunctionDefinitions::SetPedWeaponSlot ( pElement, ucSlot ) )
             {
@@ -1494,8 +1494,8 @@ int CLuaFunctionDefinitions::GetPedStat ( lua_State* luaVM )
 
         if ( pPed )
         {
-			float fValue;
-			if ( CStaticFunctionDefinitions::GetPedStat ( pPed, usStat, fValue ) )
+            float fValue;
+            if ( CStaticFunctionDefinitions::GetPedStat ( pPed, usStat, fValue ) )
             {
                 lua_pushnumber ( luaVM, fValue );
                 return 1;
@@ -1520,12 +1520,12 @@ int CLuaFunctionDefinitions::GetPedTarget ( lua_State* luaVM )
         CPed* pPed = lua_toped ( luaVM, 1 );
         if ( pPed )
         {
-			CElement* pElement = CStaticFunctionDefinitions::GetPedTarget ( pPed );
-			if ( pElement )
-			{
-				lua_pushelement ( luaVM, pElement );
-				return 1;
-			}
+            CElement* pElement = CStaticFunctionDefinitions::GetPedTarget ( pPed );
+            if ( pElement )
+            {
+                lua_pushelement ( luaVM, pElement );
+                return 1;
+            }
         }
         else
             m_pScriptDebugging->LogBadPointer ( luaVM, "getPedTarget", "ped", 1 );
@@ -1705,8 +1705,8 @@ int CLuaFunctionDefinitions::GetAlivePlayers ( lua_State* luaVM )
     CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
     if ( pLuaMain )
     {
-		// Create a new table
-		lua_newtable ( luaVM );
+        // Create a new table
+        lua_newtable ( luaVM );
 
         // Add all alive players
         unsigned int uiIndex = 0;
@@ -1716,8 +1716,8 @@ int CLuaFunctionDefinitions::GetAlivePlayers ( lua_State* luaVM )
             if ( (*iter)->IsSpawned () )
             {
                 lua_pushnumber ( luaVM, ++uiIndex );
-			    lua_pushelement ( luaVM, *iter );
-			    lua_settable ( luaVM, -3 );
+                lua_pushelement ( luaVM, *iter );
+                lua_settable ( luaVM, -3 );
             }
         }
         return 1;
@@ -1732,8 +1732,8 @@ int CLuaFunctionDefinitions::GetDeadPlayers ( lua_State* luaVM )
     CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
     if ( pLuaMain )
     {
-		// Create a new table
-		lua_newtable ( luaVM );
+        // Create a new table
+        lua_newtable ( luaVM );
 
         // Add all alive players
         unsigned int uiIndex = 0;
@@ -1743,8 +1743,8 @@ int CLuaFunctionDefinitions::GetDeadPlayers ( lua_State* luaVM )
             if ( !(*iter)->IsSpawned () )
             {
                 lua_pushnumber ( luaVM, ++uiIndex );
-			    lua_pushelement ( luaVM, *iter );
-			    lua_settable ( luaVM, -3 );
+                lua_pushelement ( luaVM, *iter );
+                lua_settable ( luaVM, -3 );
             }
         }
         return 1;
@@ -2295,7 +2295,7 @@ int CLuaFunctionDefinitions::SpawnPlayer ( lua_State* luaVM )
         CPlayer* pPlayer = lua_toplayer ( luaVM, 1 );
         if ( pPlayer )
         {
-			int iArgument2 = lua_type ( luaVM, 2 );
+            int iArgument2 = lua_type ( luaVM, 2 );
             int iArgument3 = lua_type ( luaVM, 3 );
             int iArgument4 = lua_type ( luaVM, 4 );
             if ( ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
@@ -2364,18 +2364,18 @@ int CLuaFunctionDefinitions::SetPedStat ( lua_State* luaVM )
 {
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
-	int iArgument3 = lua_type ( luaVM, 3 );
+    int iArgument3 = lua_type ( luaVM, 3 );
     if ( ( iArgument1 == LUA_TLIGHTUSERDATA ) &&
          ( iArgument2 == LUA_TSTRING || iArgument2 == LUA_TNUMBER ) &&
-		 ( iArgument3 == LUA_TSTRING || iArgument3 == LUA_TNUMBER ) )
+         ( iArgument3 == LUA_TSTRING || iArgument3 == LUA_TNUMBER ) )
     {
         CElement* pElement = lua_toelement ( luaVM, 1 );
         unsigned short usStat = static_cast < unsigned short > ( lua_tonumber ( luaVM, 2 ) );
-		float fValue = static_cast < float > ( atof ( lua_tostring ( luaVM, 3 ) ) );
+        float fValue = static_cast < float > ( atof ( lua_tostring ( luaVM, 3 ) ) );
 
         if ( pElement )
         {
-			if ( CStaticFunctionDefinitions::SetPedStat ( pElement, usStat, fValue ) )
+            if ( CStaticFunctionDefinitions::SetPedStat ( pElement, usStat, fValue ) )
             {
                 lua_pushboolean ( luaVM, true );
                 return 1;
@@ -2827,22 +2827,22 @@ int CLuaFunctionDefinitions::SetPedGravity ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetPlayerMuted ( lua_State* luaVM )
 {
-	if ( ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA ) &&
-		 ( lua_type ( luaVM, 2 ) == LUA_TBOOLEAN ) )
-	{
-		CElement* pElement = lua_toelement ( luaVM, 1 );
-		bool bMuted = lua_toboolean ( luaVM, 2 ) ?true:false;
-		if ( pElement )
-		{
-			if ( CStaticFunctionDefinitions::SetPlayerMuted ( pElement, bMuted ) )
-			{
-				lua_pushboolean ( luaVM, true );
-				return 1;
-			}
-		}
-	}
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    if ( ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA ) &&
+         ( lua_type ( luaVM, 2 ) == LUA_TBOOLEAN ) )
+    {
+        CElement* pElement = lua_toelement ( luaVM, 1 );
+        bool bMuted = lua_toboolean ( luaVM, 2 ) ?true:false;
+        if ( pElement )
+        {
+            if ( CStaticFunctionDefinitions::SetPlayerMuted ( pElement, bMuted ) )
+            {
+                lua_pushboolean ( luaVM, true );
+                return 1;
+            }
+        }
+    }
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
@@ -3303,23 +3303,23 @@ int CLuaFunctionDefinitions::CreateVehicle ( lua_State* luaVM )
         if ( lua_type ( luaVM, 9 ) == LUA_TBOOLEAN )
             bDirection = ( lua_toboolean ( luaVM, 9 ) ) ? true : false;
 
-		CLuaMain * pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource * pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create the vehicle and return its handle
-				CVehicle* pVehicle = CStaticFunctionDefinitions::CreateVehicle ( pResource, usModel, vecPosition, vecRotation, const_cast < char* > ( szRegPlate ), bDirection );
-				if ( pVehicle )
-				{
+        CLuaMain * pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource * pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create the vehicle and return its handle
+                CVehicle* pVehicle = CStaticFunctionDefinitions::CreateVehicle ( pResource, usModel, vecPosition, vecRotation, const_cast < char* > ( szRegPlate ), bDirection );
+                if ( pVehicle )
+                {
                     CElementGroup * pGroup = pResource->GetElementGroup();
                     if ( pGroup )
                     {
                         pGroup->Add ( pVehicle );
                     }
-		            lua_pushelement ( luaVM, pVehicle );
-					return 1;
+                    lua_pushelement ( luaVM, pVehicle );
+                    return 1;
                 }
             }
         }
@@ -3333,26 +3333,26 @@ int CLuaFunctionDefinitions::CreateVehicle ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::GetVehicleType ( lua_State* luaVM )
 {
-	unsigned long ucModel = 0;
-	if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
-	{
-		CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
-		if ( pVehicle )
-			ucModel = pVehicle -> GetModel ( );
-	}
-	else if ( lua_type ( luaVM, 1 ) == LUA_TNUMBER )
-	{
-		ucModel = static_cast < unsigned long > (lua_tonumber ( luaVM, 1 ));
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "getVehicleType" );
+    unsigned long ucModel = 0;
+    if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
+    {
+        CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
+        if ( pVehicle )
+            ucModel = pVehicle -> GetModel ( );
+    }
+    else if ( lua_type ( luaVM, 1 ) == LUA_TNUMBER )
+    {
+        ucModel = static_cast < unsigned long > (lua_tonumber ( luaVM, 1 ));
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getVehicleType" );
 
-	if ( ucModel >= 400 && ucModel < 610 )
-		lua_pushstring ( luaVM, CVehicleNames::GetVehicleTypeName ( ucModel ) );
-	else
-		lua_pushboolean ( luaVM, false );
+    if ( ucModel >= 400 && ucModel < 610 )
+        lua_pushstring ( luaVM, CVehicleNames::GetVehicleTypeName ( ucModel ) );
+    else
+        lua_pushboolean ( luaVM, false );
 
-	return 1;
+    return 1;
 }
 
 int CLuaFunctionDefinitions::GetVehicleColor ( lua_State* luaVM )
@@ -3596,6 +3596,40 @@ int CLuaFunctionDefinitions::GetVehicleOccupant ( lua_State* luaVM )
 }
 
 
+int CLuaFunctionDefinitions::GetVehicleOccupants ( lua_State* luaVM )
+{
+    if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
+    {
+        CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
+        if ( pVehicle )
+        {
+            // Create a new table
+            lua_newtable ( luaVM );
+
+            // Add All Occupants
+            for ( unsigned char ucSeat = 0; ucSeat <= pVehicle->GetMaxPassengers (); ++ ucSeat )
+            {
+                CPed* pPed = pVehicle->GetOccupant ( ucSeat );
+                if ( pPed )
+                {
+                    lua_pushnumber ( luaVM, ucSeat );
+                    lua_pushelement ( luaVM, pPed );
+                    lua_settable ( luaVM, -3 );
+                }
+            }
+            return 1;
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleOccupants", "vehicle", 1 );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getVehicleOccupants" );
+
+    lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+
 int CLuaFunctionDefinitions::GetVehicleController ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
@@ -3762,8 +3796,8 @@ int CLuaFunctionDefinitions::GetVehiclesOfType ( lua_State* luaVM )
     CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
     if ( pLuaMain )
     {
-		int iArgument1 = lua_type ( luaVM, 1 );
-		if ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING )
+        int iArgument1 = lua_type ( luaVM, 1 );
+        if ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING )
         {
             // Grab the type/model
             unsigned int uiModel = static_cast < unsigned int > ( lua_tonumber ( luaVM, 1 ) );
@@ -3772,7 +3806,7 @@ int CLuaFunctionDefinitions::GetVehiclesOfType ( lua_State* luaVM )
             lua_newtable ( luaVM );
 
             // Add all the vehicles with a matching model
-			m_pVehicleManager->GetVehiclesOfType ( uiModel, pLuaMain );
+            m_pVehicleManager->GetVehiclesOfType ( uiModel, pLuaMain );
             return 1;
         }
         else
@@ -3786,21 +3820,21 @@ int CLuaFunctionDefinitions::GetVehiclesOfType ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::GetVehicleUpgradeOnSlot ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
-	int iArgument2 = lua_type ( luaVM, 2 );
-	if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
+    int iArgument1 = lua_type ( luaVM, 1 );
+    int iArgument2 = lua_type ( luaVM, 2 );
+    if ( iArgument1 == LUA_TLIGHTUSERDATA &&
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
     {
         CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
         if ( pVehicle )
         {
-			unsigned char ucSlot = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-			unsigned short usUpgrade;
-			if ( CStaticFunctionDefinitions::GetVehicleUpgradeOnSlot ( pVehicle, ucSlot, usUpgrade ) )
-			{
-				lua_pushnumber ( luaVM, usUpgrade );
-				return 1;
-			}
+            unsigned char ucSlot = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
+            unsigned short usUpgrade;
+            if ( CStaticFunctionDefinitions::GetVehicleUpgradeOnSlot ( pVehicle, ucSlot, usUpgrade ) )
+            {
+                lua_pushnumber ( luaVM, usUpgrade );
+                return 1;
+            }
         }
         else
             m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleUpgradeOnSlot", "vehicle", 1 );
@@ -3815,29 +3849,29 @@ int CLuaFunctionDefinitions::GetVehicleUpgradeOnSlot ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::GetVehicleUpgradeSlotName ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
-	if ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING )
+    int iArgument1 = lua_type ( luaVM, 1 );
+    if ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING )
     {
-		unsigned long ulNumber = static_cast < unsigned long > ( lua_tonumber ( luaVM, 1 ) );
+        unsigned long ulNumber = static_cast < unsigned long > ( lua_tonumber ( luaVM, 1 ) );
 
-		if ( ulNumber < 17 )
-		{
-			char szUpgradeName [32];
-			if ( CStaticFunctionDefinitions::GetVehicleUpgradeSlotName ( static_cast < unsigned char > ( ulNumber ), szUpgradeName ) )
-			{
-				lua_pushstring ( luaVM, szUpgradeName );
-				return 1;
-			}
-		}
-		else if ( ulNumber >= 1000 && ulNumber <= 1193 )
-		{
-			char szUpgradeName [32];
-			if ( CStaticFunctionDefinitions::GetVehicleUpgradeSlotName ( static_cast < unsigned short > ( ulNumber ), szUpgradeName ) )
-			{
-				lua_pushstring ( luaVM, szUpgradeName );
-				return 1;
-			}
-		}
+        if ( ulNumber < 17 )
+        {
+            char szUpgradeName [32];
+            if ( CStaticFunctionDefinitions::GetVehicleUpgradeSlotName ( static_cast < unsigned char > ( ulNumber ), szUpgradeName ) )
+            {
+                lua_pushstring ( luaVM, szUpgradeName );
+                return 1;
+            }
+        }
+        else if ( ulNumber >= 1000 && ulNumber <= 1193 )
+        {
+            char szUpgradeName [32];
+            if ( CStaticFunctionDefinitions::GetVehicleUpgradeSlotName ( static_cast < unsigned short > ( ulNumber ), szUpgradeName ) )
+            {
+                lua_pushstring ( luaVM, szUpgradeName );
+                return 1;
+            }
+        }
         else
             m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleUpgradeSlotName", "slot/upgrade", 1 );
     }
@@ -3851,42 +3885,42 @@ int CLuaFunctionDefinitions::GetVehicleUpgradeSlotName ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::GetVehicleUpgrades ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
-	if ( iArgument1 == LUA_TLIGHTUSERDATA )
-	{
-		CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
-		// If the vehicle is valid
-		if ( pVehicle )
-		{
-			CVehicleUpgrades* pUpgrades = pVehicle->GetUpgrades ();
-			if ( pUpgrades )
-			{
-				// Create a new table
-				lua_newtable ( luaVM );
+    int iArgument1 = lua_type ( luaVM, 1 );
+    if ( iArgument1 == LUA_TLIGHTUSERDATA )
+    {
+        CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
+        // If the vehicle is valid
+        if ( pVehicle )
+        {
+            CVehicleUpgrades* pUpgrades = pVehicle->GetUpgrades ();
+            if ( pUpgrades )
+            {
+                // Create a new table
+                lua_newtable ( luaVM );
 
-				// Add all the upgrades to the table
-				unsigned short* usSlotStates = pUpgrades->GetSlotStates ();
+                // Add all the upgrades to the table
+                unsigned short* usSlotStates = pUpgrades->GetSlotStates ();
 
-				unsigned int uiIndex = 0;
-				unsigned char ucSlot = 0;
-				for ( ; ucSlot < VEHICLE_UPGRADE_SLOTS ; ucSlot++ )
-				{
+                unsigned int uiIndex = 0;
+                unsigned char ucSlot = 0;
+                for ( ; ucSlot < VEHICLE_UPGRADE_SLOTS ; ucSlot++ )
+                {
                     if ( usSlotStates [ucSlot] != 0 )
                     {
-					    lua_pushnumber ( luaVM, ++uiIndex );
-					    lua_pushnumber ( luaVM, usSlotStates [ ucSlot ] );
-					    lua_settable ( luaVM, -3 );
+                        lua_pushnumber ( luaVM, ++uiIndex );
+                        lua_pushnumber ( luaVM, usSlotStates [ ucSlot ] );
+                        lua_settable ( luaVM, -3 );
                     }
-				}
+                }
 
-				return 1;
-			}
-		}
-		else
-			m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleUpgrades", "vehicle", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "getVehicleUpgrades" );
+                return 1;
+            }
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleUpgrades", "vehicle", 1 );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getVehicleUpgrades" );
 
     lua_pushboolean ( luaVM, false );
     return 1;
@@ -3909,7 +3943,7 @@ int CLuaFunctionDefinitions::GetVehicleCompatibleUpgrades ( lua_State* luaVM )
             if ( pUpgrades )
             {
                 // Create a new table
-		        lua_newtable ( luaVM );
+                lua_newtable ( luaVM );
 
                 unsigned int uiIndex = 0;
                 for ( unsigned short usUpgrade = 1000 ; usUpgrade <= 1193 ; usUpgrade++ )
@@ -3928,8 +3962,8 @@ int CLuaFunctionDefinitions::GetVehicleCompatibleUpgrades ( lua_State* luaVM )
 
                         // Add this one to a list
                         lua_pushnumber ( luaVM, ++uiIndex );
-			            lua_pushnumber ( luaVM, usUpgrade );
-			            lua_settable ( luaVM, -3 );
+                        lua_pushnumber ( luaVM, usUpgrade );
+                        lua_settable ( luaVM, -3 );
                     }
                 }
                 return 1;
@@ -3948,117 +3982,117 @@ int CLuaFunctionDefinitions::GetVehicleCompatibleUpgrades ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::GetVehicleDoorState ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
-	int iArgument2 = lua_type ( luaVM, 2 );
-	if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
-	{
-		CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
-		if ( pVehicle )
-		{
-			unsigned char ucDoor = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-			unsigned char ucState;
-			if ( CStaticFunctionDefinitions::GetVehicleDoorState ( pVehicle, ucDoor, ucState ) )
-			{
-				lua_pushnumber ( luaVM, ucState );
-				return 1;
-			}
-		}
-		else
-			m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleDoorState", "vehicle", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "getVehicleDoorState" );
+    int iArgument1 = lua_type ( luaVM, 1 );
+    int iArgument2 = lua_type ( luaVM, 2 );
+    if ( iArgument1 == LUA_TLIGHTUSERDATA &&
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
+    {
+        CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
+        if ( pVehicle )
+        {
+            unsigned char ucDoor = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
+            unsigned char ucState;
+            if ( CStaticFunctionDefinitions::GetVehicleDoorState ( pVehicle, ucDoor, ucState ) )
+            {
+                lua_pushnumber ( luaVM, ucState );
+                return 1;
+            }
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleDoorState", "vehicle", 1 );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getVehicleDoorState" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::GetVehicleWheelStates ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
-	if ( iArgument1 == LUA_TLIGHTUSERDATA )
-	{
-		CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
-		if ( pVehicle )
-		{
-			unsigned char ucFrontLeft, ucRearLeft, ucFrontRight, ucRearRight;
-			if ( CStaticFunctionDefinitions::GetVehicleWheelStates ( pVehicle, ucFrontLeft, ucRearLeft, ucFrontRight, ucRearRight ) )
-			{
-				lua_pushnumber ( luaVM, ucFrontLeft );
+    int iArgument1 = lua_type ( luaVM, 1 );
+    if ( iArgument1 == LUA_TLIGHTUSERDATA )
+    {
+        CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
+        if ( pVehicle )
+        {
+            unsigned char ucFrontLeft, ucRearLeft, ucFrontRight, ucRearRight;
+            if ( CStaticFunctionDefinitions::GetVehicleWheelStates ( pVehicle, ucFrontLeft, ucRearLeft, ucFrontRight, ucRearRight ) )
+            {
+                lua_pushnumber ( luaVM, ucFrontLeft );
                 lua_pushnumber ( luaVM, ucRearLeft );
                 lua_pushnumber ( luaVM, ucFrontRight );
                 lua_pushnumber ( luaVM, ucRearRight );
-				return 4;
-			}
-		}
-		else
-			m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleWheelStates", "vehicle", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "getVehicleWheelStates" );
+                return 4;
+            }
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleWheelStates", "vehicle", 1 );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getVehicleWheelStates" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::GetVehicleLightState ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
-	int iArgument2 = lua_type ( luaVM, 2 );
-	if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
-	{
-		CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
-		if ( pVehicle )
-		{
-			unsigned char ucLight = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-			unsigned char ucState;
-			if ( CStaticFunctionDefinitions::GetVehicleLightState ( pVehicle, ucLight, ucState ) )
-			{
-				lua_pushnumber ( luaVM, ucState );
-				return 1;
-			}
-		}
-		else
-			m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleLightState", "vehicle", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "getVehicleLightState" );
+    int iArgument1 = lua_type ( luaVM, 1 );
+    int iArgument2 = lua_type ( luaVM, 2 );
+    if ( iArgument1 == LUA_TLIGHTUSERDATA &&
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
+    {
+        CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
+        if ( pVehicle )
+        {
+            unsigned char ucLight = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
+            unsigned char ucState;
+            if ( CStaticFunctionDefinitions::GetVehicleLightState ( pVehicle, ucLight, ucState ) )
+            {
+                lua_pushnumber ( luaVM, ucState );
+                return 1;
+            }
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "getVehicleLightState", "vehicle", 1 );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getVehicleLightState" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::GetVehiclePanelState ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
-	int iArgument2 = lua_type ( luaVM, 2 );
-	if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
-	{
-		CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
-		if ( pVehicle )
-		{
-			unsigned char ucPanel = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-			unsigned char ucState;
-			if ( CStaticFunctionDefinitions::GetVehiclePanelState ( pVehicle, ucPanel, ucState ) )
-			{
-				lua_pushnumber ( luaVM, ucState );
-				return 1;
-			}
-		}
-		else
-			m_pScriptDebugging->LogBadPointer ( luaVM, "getVehiclePanelState", "vehicle", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "getVehiclePanelState" );
+    int iArgument1 = lua_type ( luaVM, 1 );
+    int iArgument2 = lua_type ( luaVM, 2 );
+    if ( iArgument1 == LUA_TLIGHTUSERDATA &&
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
+    {
+        CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
+        if ( pVehicle )
+        {
+            unsigned char ucPanel = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
+            unsigned char ucState;
+            if ( CStaticFunctionDefinitions::GetVehiclePanelState ( pVehicle, ucPanel, ucState ) )
+            {
+                lua_pushnumber ( luaVM, ucState );
+                return 1;
+            }
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "getVehiclePanelState", "vehicle", 1 );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getVehiclePanelState" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
@@ -4480,16 +4514,12 @@ int CLuaFunctionDefinitions::GetVehicleHeadLightColor ( lua_State* luaVM )
         CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
         if ( pVehicle )
         {
-            RGBA color;
+            SColor color;
             if ( CStaticFunctionDefinitions::GetVehicleHeadLightColor ( pVehicle, color ) )
             {
-                unsigned char R = COLOR_RGBA_R ( color );
-                unsigned char G = COLOR_RGBA_G ( color );
-                unsigned char B = COLOR_RGBA_B ( color );
-
-                lua_pushnumber ( luaVM, R );
-                lua_pushnumber ( luaVM, G );
-                lua_pushnumber ( luaVM, B );
+                lua_pushnumber ( luaVM, color.R );
+                lua_pushnumber ( luaVM, color.G );
+                lua_pushnumber ( luaVM, color.B );
                 return 3;
             }
         }
@@ -4735,11 +4765,11 @@ int CLuaFunctionDefinitions::SetVehicleSirensOn ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::AddVehicleUpgrade ( lua_State* luaVM )
 {
-	// Verify the two arguments
+    // Verify the two arguments
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
     if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
     {
 
         // Grab the element and verify it
@@ -4761,7 +4791,7 @@ int CLuaFunctionDefinitions::AddVehicleUpgrade ( lua_State* luaVM )
                 }
             }
 
-			if ( CStaticFunctionDefinitions::AddVehicleUpgrade ( pElement, usUpgrade ) )
+            if ( CStaticFunctionDefinitions::AddVehicleUpgrade ( pElement, usUpgrade ) )
             {
                 lua_pushboolean ( luaVM, true );
                 return 1;
@@ -4780,11 +4810,11 @@ int CLuaFunctionDefinitions::AddVehicleUpgrade ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::RemoveVehicleUpgrade ( lua_State* luaVM )
 {
-	// Verify the two arguments
+    // Verify the two arguments
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
     if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
     {
 
         // Grab the element and verify it
@@ -4793,7 +4823,7 @@ int CLuaFunctionDefinitions::RemoveVehicleUpgrade ( lua_State* luaVM )
         if ( pElement )
         {
             // Do it
-			if ( CStaticFunctionDefinitions::RemoveVehicleUpgrade ( pElement, usUpgrade ) )
+            if ( CStaticFunctionDefinitions::RemoveVehicleUpgrade ( pElement, usUpgrade ) )
             {
                 lua_pushboolean ( luaVM, true );
                 return 1;
@@ -4812,18 +4842,18 @@ int CLuaFunctionDefinitions::RemoveVehicleUpgrade ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetVehicleDoorState ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
-	int iArgument3 = lua_type ( luaVM, 3 );
+    int iArgument3 = lua_type ( luaVM, 3 );
     if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
-	   ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
+       ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
     {
         // Grab the element and verify it
         CElement* pElement = lua_toelement ( luaVM, 1 );
         unsigned char ucDoor = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-		unsigned char ucState = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
+        unsigned char ucState = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
         if ( pElement )
         {
             // Do it
@@ -4846,7 +4876,7 @@ int CLuaFunctionDefinitions::SetVehicleDoorState ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetVehicleWheelStates ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     int iArgument2 = lua_type ( luaVM, 2 );
     if ( ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA ) &&
          ( iArgument2 == LUA_TSTRING || iArgument2 == LUA_TNUMBER ) )
@@ -4889,18 +4919,18 @@ int CLuaFunctionDefinitions::SetVehicleWheelStates ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetVehicleLightState ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
-	int iArgument3 = lua_type ( luaVM, 3 );
+    int iArgument3 = lua_type ( luaVM, 3 );
     if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
-	   ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
+       ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
     {
         // Grab the element and verify it
         CElement* pElement = lua_toelement ( luaVM, 1 );
         unsigned char ucLight = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-		unsigned char ucState = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
+        unsigned char ucState = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
         if ( pElement )
         {
             // Do it
@@ -4923,18 +4953,18 @@ int CLuaFunctionDefinitions::SetVehicleLightState ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetVehiclePanelState ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
-	int iArgument3 = lua_type ( luaVM, 3 );
+    int iArgument3 = lua_type ( luaVM, 3 );
     if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-	   ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
-	   ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
+       ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
+       ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
     {
         // Grab the element and verify it
         CElement* pElement = lua_toelement ( luaVM, 1 );
         unsigned char ucPanel = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-		unsigned char ucState = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
+        unsigned char ucState = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
         if ( pElement )
         {
             // Do it
@@ -4957,7 +4987,7 @@ int CLuaFunctionDefinitions::SetVehiclePanelState ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::ToggleVehicleRespawn ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA &&
          lua_type ( luaVM, 2 ) == LUA_TBOOLEAN )
     {
@@ -4985,7 +5015,7 @@ int CLuaFunctionDefinitions::ToggleVehicleRespawn ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetVehicleRespawnDelay ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     int iArgument2 = lua_type ( luaVM, 2 );
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA &&
          ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
@@ -5014,7 +5044,7 @@ int CLuaFunctionDefinitions::SetVehicleRespawnDelay ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetVehicleRespawnPosition ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     int iArgument2 = lua_type ( luaVM, 2 );
     int iArgument3 = lua_type ( luaVM, 3 );
     int iArgument4 = lua_type ( luaVM, 4 );
@@ -5065,7 +5095,7 @@ int CLuaFunctionDefinitions::SetVehicleRespawnPosition ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SetVehicleIdleRespawnDelay ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     int iArgument2 = lua_type ( luaVM, 2 );
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA &&
          ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) )
@@ -5119,7 +5149,7 @@ int CLuaFunctionDefinitions::RespawnVehicle ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::ResetVehicleExplosionTime ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
         // Grab the element and verify it
@@ -5145,7 +5175,7 @@ int CLuaFunctionDefinitions::ResetVehicleExplosionTime ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::ResetVehicleIdleTime ( lua_State* luaVM )
 {
-	// Verify the three arguments
+    // Verify the three arguments
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
         // Grab the element and verify it
@@ -5171,7 +5201,7 @@ int CLuaFunctionDefinitions::ResetVehicleIdleTime ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::SpawnVehicle ( lua_State* luaVM )
 {
-	// Verify the arguments
+    // Verify the arguments
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
     int iArgument3 = lua_type ( luaVM, 3 );
@@ -5605,11 +5635,12 @@ int CLuaFunctionDefinitions::SetVehicleHeadLightColor ( lua_State* luaVM )
         CVehicle* pVehicle = lua_tovehicle ( luaVM, 1 );
         if ( pVehicle )
         {
-            unsigned char ucR = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-            unsigned char ucG = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
-            unsigned char ucB = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
+            SColor color;
+            color.R = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
+            color.G = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
+            color.B = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
+            color.A = 255;
 
-            RGBA color = COLOR_RGBA ( ucR, ucG, ucB, 255 );
             if ( CStaticFunctionDefinitions::SetVehicleHeadLightColor ( pVehicle, color ) )
             {
                 lua_pushboolean ( luaVM, true );
@@ -5645,10 +5676,7 @@ int CLuaFunctionDefinitions::CreateMarker ( lua_State* luaVM )
 
         // Other defaulted arguments
         float fSize = 4.0f;
-        unsigned char ucRed = 0;
-        unsigned char ucGreen = 0;
-        unsigned char ucBlue = 255;
-        unsigned char ucAlpha = 255;
+        SColorRGBA color ( 0, 0, 255, 255 );
         CElement* pVisibleTo = m_pRootElement;
 
         // Optional type argument
@@ -5678,7 +5706,7 @@ int CLuaFunctionDefinitions::CreateMarker ( lua_State* luaVM )
             lua_Number nRed = lua_tonumber ( luaVM, 6 );
             if ( nRed >= 0 && nRed <= 255 )
             {
-                ucRed = static_cast < unsigned char > ( nRed );
+                color.R = static_cast < unsigned char > ( nRed );
             }
         }
 
@@ -5689,7 +5717,7 @@ int CLuaFunctionDefinitions::CreateMarker ( lua_State* luaVM )
             lua_Number nGreen = lua_tonumber ( luaVM, 7 );
             if ( nGreen >= 0 && nGreen <= 255 )
             {
-                ucGreen = static_cast < unsigned char > ( nGreen );
+                color.G = static_cast < unsigned char > ( nGreen );
             }
         }
 
@@ -5700,7 +5728,7 @@ int CLuaFunctionDefinitions::CreateMarker ( lua_State* luaVM )
             lua_Number nBlue = lua_tonumber ( luaVM, 8 );
             if ( nBlue >= 0 && nBlue <= 255 )
             {
-                ucBlue = static_cast < unsigned char > ( nBlue );
+                color.B = static_cast < unsigned char > ( nBlue );
             }
         }
 
@@ -5711,7 +5739,7 @@ int CLuaFunctionDefinitions::CreateMarker ( lua_State* luaVM )
             lua_Number nAlpha = lua_tonumber ( luaVM, 9 );
             if ( nAlpha >= 0 && nAlpha <= 255 )
             {
-                ucAlpha = static_cast < unsigned char > ( nAlpha );
+                color.A = static_cast < unsigned char > ( nAlpha );
             }
         }
 
@@ -5727,25 +5755,25 @@ int CLuaFunctionDefinitions::CreateMarker ( lua_State* luaVM )
         }
 
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create it
-				CMarker* pMarker = CStaticFunctionDefinitions::CreateMarker ( pResource, vecPosition, szType, fSize, ucRed, ucGreen, ucBlue, ucAlpha, pVisibleTo );
-				if ( pMarker )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pMarker );
-					}
-					lua_pushelement ( luaVM, pMarker );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create it
+                CMarker* pMarker = CStaticFunctionDefinitions::CreateMarker ( pResource, vecPosition, szType, fSize, color, pVisibleTo );
+                if ( pMarker )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pMarker );
+                    }
+                    lua_pushelement ( luaVM, pMarker );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -5827,16 +5855,13 @@ int CLuaFunctionDefinitions::GetMarkerColor ( lua_State* luaVM )
         CMarker* pMarker = lua_tomarker ( luaVM, 1 );
         if ( pMarker )
         {
-            unsigned char ucRed;
-            unsigned char ucGreen;
-            unsigned char ucBlue;
-            unsigned char ucAlpha;
-            if ( CStaticFunctionDefinitions::GetMarkerColor ( pMarker, ucRed, ucGreen, ucBlue, ucAlpha ) )
+            SColor color;
+            if ( CStaticFunctionDefinitions::GetMarkerColor ( pMarker, color ) )
             {
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucRed ) );
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucGreen ) );
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucBlue ) );
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucAlpha ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.R ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.G ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.B ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.A ) );
                 return 4;
             }
         }
@@ -5984,13 +6009,14 @@ int CLuaFunctionDefinitions::SetMarkerColor ( lua_State* luaVM )
                  dBlue >= 0 && dBlue <= 255 &&
                  dAlpha >= 0 && dAlpha <= 255 )
             {
-                unsigned char ucRed = static_cast < unsigned char > ( dRed );
-                unsigned char ucGreen = static_cast < unsigned char > ( dGreen );
-                unsigned char ucBlue = static_cast < unsigned char > ( dBlue );
-                unsigned char ucAlpha = static_cast < unsigned char > ( dAlpha );
+                SColor color;
+                color.R = static_cast < unsigned char > ( dRed );
+                color.G = static_cast < unsigned char > ( dGreen );
+                color.B = static_cast < unsigned char > ( dBlue );
+                color.A = static_cast < unsigned char > ( dAlpha );
 
                 // Set the new color
-                if ( CStaticFunctionDefinitions::SetMarkerColor ( pElement, ucRed, ucGreen, ucBlue, ucAlpha ) )
+                if ( CStaticFunctionDefinitions::SetMarkerColor ( pElement, color ) )
                 {
                     lua_pushboolean ( luaVM, true );
                     return 1;
@@ -6109,10 +6135,7 @@ int CLuaFunctionDefinitions::CreateBlip ( lua_State* luaVM )
         // Default colors and size
         unsigned char ucIcon = 0;
         unsigned char ucSize = 2;
-        unsigned char ucRed = 255;
-        unsigned char ucGreen = 0;
-        unsigned char ucBlue = 0;
-        unsigned char ucAlpha = 255;
+        SColorRGBA color ( 255, 0, 0, 255 );
         short sOrdering = 0;
         float fVisibleDistance = 99999.0f;
         CElement* pVisibleTo = m_pRootElement;
@@ -6131,22 +6154,22 @@ int CLuaFunctionDefinitions::CreateBlip ( lua_State* luaVM )
                 int iArgument6 = lua_type ( luaVM, 6 );
                 if ( iArgument6 == LUA_TNUMBER || iArgument6 == LUA_TSTRING )
                 {
-                    ucRed = static_cast < unsigned char > ( lua_tonumber ( luaVM, 6 ) );
+                    color.R = static_cast < unsigned char > ( lua_tonumber ( luaVM, 6 ) );
 
                     int iArgument7 = lua_type ( luaVM, 7 );
                     if ( iArgument7 == LUA_TNUMBER || iArgument7 == LUA_TSTRING )
                     {
-                        ucGreen = static_cast < unsigned char > ( lua_tonumber ( luaVM, 7 ) );
+                        color.G = static_cast < unsigned char > ( lua_tonumber ( luaVM, 7 ) );
 
                         int iArgument8 = lua_type ( luaVM, 8 );
                         if ( iArgument8 == LUA_TNUMBER || iArgument8 == LUA_TSTRING )
                         {
-                            ucBlue = static_cast < unsigned char > ( lua_tonumber ( luaVM, 8 ) );
+                            color.B = static_cast < unsigned char > ( lua_tonumber ( luaVM, 8 ) );
 
                             int iArgument9 = lua_type ( luaVM, 9 );
                             if ( iArgument9 == LUA_TNUMBER || iArgument9 == LUA_TSTRING )
                             {
-                                ucAlpha = static_cast < unsigned char > ( lua_tonumber ( luaVM, 9 ) );
+                                color.A = static_cast < unsigned char > ( lua_tonumber ( luaVM, 9 ) );
 
                                 int iArgument10 = lua_type ( luaVM, 10 );
                                 if ( iArgument10 == LUA_TNUMBER || iArgument10 == LUA_TSTRING )
@@ -6177,25 +6200,25 @@ int CLuaFunctionDefinitions::CreateBlip ( lua_State* luaVM )
             }
         }
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create the blip
-				CBlip* pBlip = CStaticFunctionDefinitions::CreateBlip ( pResource, vecPosition, ucIcon, ucSize, ucRed, ucGreen, ucBlue, ucAlpha, sOrdering, fVisibleDistance, pVisibleTo );
-				if ( pBlip )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pBlip );
-					}
-					lua_pushelement ( luaVM, pBlip );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create the blip
+                CBlip* pBlip = CStaticFunctionDefinitions::CreateBlip ( pResource, vecPosition, ucIcon, ucSize, color, sOrdering, fVisibleDistance, pVisibleTo );
+                if ( pBlip )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pBlip );
+                    }
+                    lua_pushelement ( luaVM, pBlip );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -6218,10 +6241,7 @@ int CLuaFunctionDefinitions::CreateBlipAttachedTo ( lua_State* luaVM )
             // Default colors and size
             unsigned char ucIcon = 0;
             unsigned char ucSize = 2;
-            unsigned char ucRed = 255;
-            unsigned char ucGreen = 0;
-            unsigned char ucBlue = 0;
-            unsigned char ucAlpha = 255;
+            SColorRGBA color ( 255, 0, 0, 255 );
             short sOrdering = 0;
             float fVisibleDistance = 99999.0f;
             CElement* pVisibleTo = m_pRootElement;
@@ -6240,22 +6260,22 @@ int CLuaFunctionDefinitions::CreateBlipAttachedTo ( lua_State* luaVM )
                     int iArgument4 = lua_type ( luaVM, 4 );
                     if ( iArgument4 == LUA_TNUMBER || iArgument4 == LUA_TSTRING )
                     {
-                        ucRed = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
+                        color.R = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
 
                         int iArgument5 = lua_type ( luaVM, 5 );
                         if ( iArgument5 == LUA_TNUMBER || iArgument5 == LUA_TSTRING )
                         {
-                            ucGreen = static_cast < unsigned char > ( lua_tonumber ( luaVM, 5 ) );
+                            color.G = static_cast < unsigned char > ( lua_tonumber ( luaVM, 5 ) );
 
                             int iArgument6 = lua_type ( luaVM, 6 );
                             if ( iArgument6 == LUA_TNUMBER || iArgument6 == LUA_TSTRING )
                             {
-                                ucBlue = static_cast < unsigned char > ( lua_tonumber ( luaVM, 6 ) );
+                                color.B = static_cast < unsigned char > ( lua_tonumber ( luaVM, 6 ) );
 
                                 int iArgument7 = lua_type ( luaVM, 7 );
                                 if ( iArgument7 == LUA_TNUMBER || iArgument7 == LUA_TSTRING )
                                 {
-                                    ucAlpha = static_cast < unsigned char > ( lua_tonumber ( luaVM, 7 ) );
+                                    color.A = static_cast < unsigned char > ( lua_tonumber ( luaVM, 7 ) );
 
                                     int iArgument8 = lua_type ( luaVM, 8 );
                                     if ( iArgument8 == LUA_TNUMBER || iArgument8 == LUA_TSTRING )
@@ -6288,21 +6308,21 @@ int CLuaFunctionDefinitions::CreateBlipAttachedTo ( lua_State* luaVM )
             CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
             if ( pLuaMain )
             {
-				CResource * resource = pLuaMain->GetResource();
+                CResource * resource = pLuaMain->GetResource();
                 if ( resource )
                 {
-					// Create the blip
-					CBlip* pBlip = CStaticFunctionDefinitions::CreateBlipAttachedTo ( resource, pElement, ucIcon, ucSize, ucRed, ucGreen, ucBlue, ucAlpha, sOrdering, fVisibleDistance, pVisibleTo );
-					if ( pBlip )
-					{
+                    // Create the blip
+                    CBlip* pBlip = CStaticFunctionDefinitions::CreateBlipAttachedTo ( resource, pElement, ucIcon, ucSize, color, sOrdering, fVisibleDistance, pVisibleTo );
+                    if ( pBlip )
+                    {
                         pBlip->SetParentObject ( resource->GetDynamicElementRoot() );
                         CElementGroup * group = resource->GetElementGroup();
                         if ( group )
                         {
                             group->Add ( pBlip );
                         }
-						lua_pushelement ( luaVM, pBlip );
-						return 1;
+                        lua_pushelement ( luaVM, pBlip );
+                        return 1;
                     }
                 }
             }
@@ -6375,17 +6395,13 @@ int CLuaFunctionDefinitions::GetBlipColor ( lua_State* luaVM )
         CBlip* pBlip = lua_toblip ( luaVM, 1 );
         if ( pBlip )
         {
-            unsigned char ucRed;
-            unsigned char ucGreen;
-            unsigned char ucBlue;
-            unsigned char ucAlpha;
-
-            if ( CStaticFunctionDefinitions::GetBlipColor ( pBlip, ucRed, ucGreen, ucBlue, ucAlpha ) )
+            SColor color;
+            if ( CStaticFunctionDefinitions::GetBlipColor ( pBlip, color ) )
             {
-                lua_pushnumber ( luaVM, ucRed );
-                lua_pushnumber ( luaVM, ucGreen );
-                lua_pushnumber ( luaVM, ucBlue );
-                lua_pushnumber ( luaVM, ucAlpha );
+                lua_pushnumber ( luaVM, color.R );
+                lua_pushnumber ( luaVM, color.G );
+                lua_pushnumber ( luaVM, color.B );
+                lua_pushnumber ( luaVM, color.A );
                 return 4;
             }
         }
@@ -6496,12 +6512,13 @@ int CLuaFunctionDefinitions::SetBlipColor ( lua_State* luaVM )
         CElement* pElement = lua_toelement ( luaVM, 1 );
         if ( pElement )
         {
-            unsigned char ucRed = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
-            unsigned char ucGreen = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
-            unsigned char ucBlue = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
-            unsigned char ucAlpha = static_cast < unsigned char > ( lua_tonumber ( luaVM, 5 ) );
+            SColor color;
+            color.R = static_cast < unsigned char > ( lua_tonumber ( luaVM, 2 ) );
+            color.G = static_cast < unsigned char > ( lua_tonumber ( luaVM, 3 ) );
+            color.B = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
+            color.A = static_cast < unsigned char > ( lua_tonumber ( luaVM, 5 ) );
 
-            if ( CStaticFunctionDefinitions::SetBlipColor ( pElement, ucRed, ucGreen, ucBlue, ucAlpha ) )
+            if ( CStaticFunctionDefinitions::SetBlipColor ( pElement, color ) )
             {
                 lua_pushboolean ( luaVM, true );
                 return 1;
@@ -6589,26 +6606,26 @@ int CLuaFunctionDefinitions::CreateObject ( lua_State* luaVM )
                     }
                 }
 
-				CLuaMain * pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-				if ( pLuaMain )
-				{
-					CResource * pResource = pLuaMain->GetResource();
-					if ( pResource )
-					{
-						CObject* pObject = CStaticFunctionDefinitions::CreateObject ( pResource, usModelID, vecPosition, vecRotation );
-						if ( pObject )
-						{
+                CLuaMain * pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+                if ( pLuaMain )
+                {
+                    CResource * pResource = pLuaMain->GetResource();
+                    if ( pResource )
+                    {
+                        CObject* pObject = CStaticFunctionDefinitions::CreateObject ( pResource, usModelID, vecPosition, vecRotation );
+                        if ( pObject )
+                        {
 
-							CElementGroup * pGroup = pResource->GetElementGroup();
-							if ( pGroup )
-							{
-								pGroup->Add ( pObject );
-							}
+                            CElementGroup * pGroup = pResource->GetElementGroup();
+                            if ( pGroup )
+                            {
+                                pGroup->Add ( pObject );
+                            }
 
-							lua_pushelement ( luaVM, pObject );
-							return 1;
-						}
-					}
+                            lua_pushelement ( luaVM, pObject );
+                            return 1;
+                        }
+                    }
                 }
             }
             else
@@ -6731,11 +6748,11 @@ int CLuaFunctionDefinitions::MoveObject ( lua_State* luaVM )
             }
 
             CLuaMain * pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-			if ( pLuaMain )
-			{
-				CResource * pResource = pLuaMain->GetResource();
-				if ( pResource )
-				{
+            if ( pLuaMain )
+            {
+                CResource * pResource = pLuaMain->GetResource();
+                if ( pResource )
+                {
                     if ( CStaticFunctionDefinitions::MoveObject ( pResource, pElement, ulTime, vecTargetPosition, vecTargetRotation ) )
                     {
                         lua_pushboolean ( luaVM, true );
@@ -6816,6 +6833,12 @@ int CLuaFunctionDefinitions::CreateRadarArea ( lua_State* luaVM )
              dBlue >= 0 && dBlue <= 255 &&
              dAlpha >= 0 && dAlpha <= 255 )
         {
+            SColor color;
+            color.R = static_cast < unsigned char > ( dRed );
+            color.G = static_cast < unsigned char > ( dGreen );
+            color.B = static_cast < unsigned char > ( dBlue );
+            color.A = static_cast < unsigned char > ( dAlpha );
+
             // Read out optional visibleTo argument
             CElement* pVisibleTo = m_pRootElement;
             int iArgument9 = lua_type ( luaVM, 9 );
@@ -6828,25 +6851,25 @@ int CLuaFunctionDefinitions::CreateRadarArea ( lua_State* luaVM )
                 pVisibleTo = NULL;
             }
 
-			CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-			if ( pLuaMain )
-			{
-				CResource* pResource = pLuaMain->GetResource();
-				if ( pResource )
-				{
-					// Create it
-					CRadarArea* pRadarArea = CStaticFunctionDefinitions::CreateRadarArea ( pResource, vecPosition, vecSize, static_cast < unsigned char > ( dRed ), static_cast < unsigned char > ( dGreen ), static_cast < unsigned char > ( dBlue ), static_cast < unsigned char > ( dAlpha ), pVisibleTo );
-					if ( pRadarArea )
-					{
-						CElementGroup * pGroup = pResource->GetElementGroup();
-						if ( pGroup )
-						{
-							pGroup->Add ( pRadarArea );
-						}
-						lua_pushelement ( luaVM, pRadarArea );
-						return 1;
-					}
-				}
+            CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+            if ( pLuaMain )
+            {
+                CResource* pResource = pLuaMain->GetResource();
+                if ( pResource )
+                {
+                    // Create it
+                    CRadarArea* pRadarArea = CStaticFunctionDefinitions::CreateRadarArea ( pResource, vecPosition, vecSize, color, pVisibleTo );
+                    if ( pRadarArea )
+                    {
+                        CElementGroup * pGroup = pResource->GetElementGroup();
+                        if ( pGroup )
+                        {
+                            pGroup->Add ( pRadarArea );
+                        }
+                        lua_pushelement ( luaVM, pRadarArea );
+                        return 1;
+                    }
+                }
             }
         }
         else
@@ -6894,17 +6917,13 @@ int CLuaFunctionDefinitions::GetRadarAreaColor ( lua_State* luaVM )
         CRadarArea* pRadarArea = lua_toradararea ( luaVM, 1 );
         if ( pRadarArea )
         {
-            unsigned char ucRed = 0;
-            unsigned char ucGreen = 0;
-            unsigned char ucBlue = 0;
-            unsigned char ucAlpha = 0;
-
-            if ( CStaticFunctionDefinitions::GetRadarAreaColor ( pRadarArea, ucRed, ucGreen, ucBlue, ucAlpha ) )
+            SColor color;
+            if ( CStaticFunctionDefinitions::GetRadarAreaColor ( pRadarArea, color ) )
             {
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucRed ) );
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucGreen ) );
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucBlue ) );
-                lua_pushnumber ( luaVM, static_cast < lua_Number > ( ucAlpha ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.R ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.G ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.B ) );
+                lua_pushnumber ( luaVM, static_cast < lua_Number > ( color.A ) );
                 return 4;
             }
         }
@@ -7024,10 +7043,16 @@ int CLuaFunctionDefinitions::SetRadarAreaColor ( lua_State* luaVM )
              dBlue >= 0 && dBlue <= 255 &&
              dAlpha >= 0 && dAlpha <= 255 )
         {
+            SColor color;
+            color.R = static_cast < unsigned char > ( dRed );
+            color.G = static_cast < unsigned char > ( dGreen );
+            color.B = static_cast < unsigned char > ( dBlue );
+            color.A = static_cast < unsigned char > ( dAlpha );
+
             CElement* pElement = lua_toelement ( luaVM, 1 );
             if ( pElement )
             {
-                if ( CStaticFunctionDefinitions::SetRadarAreaColor ( pElement, static_cast < unsigned char > ( dRed ), static_cast < unsigned char > ( dGreen ), static_cast < unsigned char > ( dBlue ), static_cast < unsigned char > ( dAlpha ) ) )
+                if ( CStaticFunctionDefinitions::SetRadarAreaColor ( pElement, color ) )
                 {
                     lua_pushboolean ( luaVM, true );
                     return 1;
@@ -7074,13 +7099,13 @@ int CLuaFunctionDefinitions::SetRadarAreaFlashing ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::CreateExplosion ( lua_State* luaVM )
 {
-	// Verify the argument types
+    // Verify the argument types
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
     int iArgument3 = lua_type ( luaVM, 3 );
     int iArgument4 = lua_type ( luaVM, 4 );
-	int iArgument5 = lua_type ( luaVM, 5 );
-	CElement* pCreator = NULL;
+    int iArgument5 = lua_type ( luaVM, 5 );
+    CElement* pCreator = NULL;
     if ( ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING ) &&
          ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
          ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) &&
@@ -7090,34 +7115,34 @@ int CLuaFunctionDefinitions::CreateExplosion ( lua_State* luaVM )
         CVector vecPosition = CVector ( float ( lua_tonumber ( luaVM, 1 ) ), float ( lua_tonumber ( luaVM, 2 ) ), float ( lua_tonumber ( luaVM, 3 ) ) );
         unsigned char ucType = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
 
-		if ( iArgument5 == LUA_TLIGHTUSERDATA )
-		{
-			pCreator = lua_toelement ( luaVM, 5 );
-		}
+        if ( iArgument5 == LUA_TLIGHTUSERDATA )
+        {
+            pCreator = lua_toelement ( luaVM, 5 );
+        }
 
-		if ( CStaticFunctionDefinitions::CreateExplosion ( vecPosition, ucType, pCreator ) )
-		{
-			lua_pushboolean ( luaVM, true );
-			return 1;
-		}
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "createExplosion" );
+        if ( CStaticFunctionDefinitions::CreateExplosion ( vecPosition, ucType, pCreator ) )
+        {
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "createExplosion" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::CreateFire ( lua_State* luaVM )
 {
-	// Verify the argument types
+    // Verify the argument types
     int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
     int iArgument3 = lua_type ( luaVM, 3 );
     int iArgument4 = lua_type ( luaVM, 4 );
-	int iArgument5 = lua_type ( luaVM, 5 );
-	CElement* pCreator = NULL;
+    int iArgument5 = lua_type ( luaVM, 5 );
+    CElement* pCreator = NULL;
     if ( ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING ) &&
          ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
          ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
@@ -7125,33 +7150,33 @@ int CLuaFunctionDefinitions::CreateFire ( lua_State* luaVM )
         // Grab the values
         CVector vecPosition = CVector ( float ( lua_tonumber ( luaVM, 1 ) ), float ( lua_tonumber ( luaVM, 2 ) ), float ( lua_tonumber ( luaVM, 3 ) ) );
         float fSize = 1.8f;
-		if ( iArgument4 == LUA_TNUMBER || iArgument4 == LUA_TSTRING )
-		{
-			fSize = float ( lua_tonumber ( luaVM, 4 ) );
-		}
+        if ( iArgument4 == LUA_TNUMBER || iArgument4 == LUA_TSTRING )
+        {
+            fSize = float ( lua_tonumber ( luaVM, 4 ) );
+        }
 
-		if ( iArgument5 == LUA_TLIGHTUSERDATA )
-		{
-			pCreator = lua_toelement ( luaVM, 5 );
-		}
+        if ( iArgument5 == LUA_TLIGHTUSERDATA )
+        {
+            pCreator = lua_toelement ( luaVM, 5 );
+        }
 
-		if ( CStaticFunctionDefinitions::CreateFire ( vecPosition, fSize, pCreator ) )
-		{
-			lua_pushboolean ( luaVM, true );
-			return 1;
-		}
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "createFire" );
+        if ( CStaticFunctionDefinitions::CreateFire ( vecPosition, fSize, pCreator ) )
+        {
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "createFire" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::PlayMissionAudio ( lua_State* luaVM )
 {
-	int iArgument2 = lua_type ( luaVM, 2 );
+    int iArgument2 = lua_type ( luaVM, 2 );
     int iArgument3 = lua_type ( luaVM, 3 );
     int iArgument4 = lua_type ( luaVM, 4 );
     int iArgument5 = lua_type ( luaVM, 5 );
@@ -7162,102 +7187,102 @@ int CLuaFunctionDefinitions::PlayMissionAudio ( lua_State* luaVM )
         CElement* pElement = lua_toelement ( luaVM, 1 );
         if ( pElement )
         {
-			unsigned short usSlot = static_cast < unsigned short > ( lua_tonumber ( luaVM, 2 ) );
+            unsigned short usSlot = static_cast < unsigned short > ( lua_tonumber ( luaVM, 2 ) );
 
-			if ( ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) &&
-				 ( iArgument4 == LUA_TNUMBER || iArgument4 == LUA_TSTRING ) &&
-				 ( iArgument5 == LUA_TNUMBER || iArgument5 == LUA_TSTRING ) )
-			{
-	            CVector vecPosition = CVector ( float ( lua_tonumber ( luaVM, 3 ) ), float ( lua_tonumber ( luaVM, 4 ) ), float ( lua_tonumber ( luaVM, 5 ) ) );
+            if ( ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) &&
+                 ( iArgument4 == LUA_TNUMBER || iArgument4 == LUA_TSTRING ) &&
+                 ( iArgument5 == LUA_TNUMBER || iArgument5 == LUA_TSTRING ) )
+            {
+                CVector vecPosition = CVector ( float ( lua_tonumber ( luaVM, 3 ) ), float ( lua_tonumber ( luaVM, 4 ) ), float ( lua_tonumber ( luaVM, 5 ) ) );
 
-				if ( CStaticFunctionDefinitions::PlayMissionAudio ( pElement, &vecPosition, usSlot ) )
-				{
-					lua_pushboolean ( luaVM, true );
-					return 1;
-				}
-			} else
-			{
-				if ( CStaticFunctionDefinitions::PlayMissionAudio ( pElement, NULL, usSlot ) )
-				{
-					lua_pushboolean ( luaVM, true );
-					return 1;
-				}
-			}
+                if ( CStaticFunctionDefinitions::PlayMissionAudio ( pElement, &vecPosition, usSlot ) )
+                {
+                    lua_pushboolean ( luaVM, true );
+                    return 1;
+                }
+            } else
+            {
+                if ( CStaticFunctionDefinitions::PlayMissionAudio ( pElement, NULL, usSlot ) )
+                {
+                    lua_pushboolean ( luaVM, true );
+                    return 1;
+                }
+            }
         }
         else
             m_pScriptDebugging->LogBadPointer ( luaVM, "playMissionAudio", "element", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "playMissionAudio" );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "playMissionAudio" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::PreloadMissionAudio ( lua_State* luaVM )
 {
-	int iArgument2 = lua_type ( luaVM, 2 );
+    int iArgument2 = lua_type ( luaVM, 2 );
     int iArgument3 = lua_type ( luaVM, 3 );
 
     if ( ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA ) &&
          ( iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING ) &&
-		 ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
+         ( iArgument3 == LUA_TNUMBER || iArgument3 == LUA_TSTRING ) )
     {
         CElement* pElement = lua_toelement ( luaVM, 1 );
         if ( pElement )
         {
             unsigned short usSound = static_cast < unsigned short > ( lua_tonumber ( luaVM, 2 ) );
-			unsigned short usSlot = static_cast < unsigned short > ( lua_tonumber ( luaVM, 3 ) );
+            unsigned short usSlot = static_cast < unsigned short > ( lua_tonumber ( luaVM, 3 ) );
 
-			if ( CStaticFunctionDefinitions::PreloadMissionAudio ( pElement, usSound, usSlot ) )
-		    {
-			    lua_pushboolean ( luaVM, true );
-			    return 1;
-		    }
+            if ( CStaticFunctionDefinitions::PreloadMissionAudio ( pElement, usSound, usSlot ) )
+            {
+                lua_pushboolean ( luaVM, true );
+                return 1;
+            }
         }
         else
             m_pScriptDebugging->LogBadPointer ( luaVM, "preloadMissionAudio", "element", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "preloadMissionAudio" );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "preloadMissionAudio" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::PlaySoundFrontEnd ( lua_State* luaVM )
 {
-	int iArgument1 = lua_type ( luaVM, 1 );
+    int iArgument1 = lua_type ( luaVM, 1 );
     int iArgument2 = lua_type ( luaVM, 2 );
-	if ( iArgument1 == LUA_TLIGHTUSERDATA &&
-		 (iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING) )
-	{
-		CElement* pElement = lua_toelement ( luaVM, 1 );
-		if ( pElement )
-		{
-			unsigned long ulSound = static_cast < unsigned long > ( lua_tonumber ( luaVM, 2 ) );
+    if ( iArgument1 == LUA_TLIGHTUSERDATA &&
+         (iArgument2 == LUA_TNUMBER || iArgument2 == LUA_TSTRING) )
+    {
+        CElement* pElement = lua_toelement ( luaVM, 1 );
+        if ( pElement )
+        {
+            unsigned long ulSound = static_cast < unsigned long > ( lua_tonumber ( luaVM, 2 ) );
 
             if ( ulSound <= 101 )
             {
-			    if ( CStaticFunctionDefinitions::PlaySoundFrontEnd ( pElement, ulSound ) )
-			    {
-				    lua_pushboolean ( luaVM, true );
-				    return 1;
-			    }
+                if ( CStaticFunctionDefinitions::PlaySoundFrontEnd ( pElement, ulSound ) )
+                {
+                    lua_pushboolean ( luaVM, true );
+                    return 1;
+                }
             }
             else
                 m_pScriptDebugging->LogError ( luaVM, "Invalid sound ID specified. Valid sound IDs are 0 - 101." );
-		}
-		else
-			m_pScriptDebugging->LogBadPointer ( luaVM, "playSoundFrontEnd", "element", 1 );
-	}
-	else
-		m_pScriptDebugging->LogBadType ( luaVM, "playSoundFrontEnd" );
+        }
+        else
+            m_pScriptDebugging->LogBadPointer ( luaVM, "playSoundFrontEnd", "element", 1 );
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "playSoundFrontEnd" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
@@ -7331,9 +7356,9 @@ int CLuaFunctionDefinitions::UnbindKey ( lua_State* luaVM )
             CPlayer* pPlayer = lua_toplayer ( luaVM, 1 );
             const char* szKey = lua_tostring ( luaVM, 2 );
             const char* szHitState = NULL;
-			int iLuaFunction = LUA_REFNIL;
+            int iLuaFunction = LUA_REFNIL;
 
-			if ( lua_type ( luaVM, 3 ) != LUA_TNONE )
+            if ( lua_type ( luaVM, 3 ) != LUA_TNONE )
                 szHitState = lua_tostring ( luaVM, 3 );
 
             if ( pPlayer )
@@ -7350,7 +7375,7 @@ int CLuaFunctionDefinitions::UnbindKey ( lua_State* luaVM )
                 }
                 else
                 {
-			        iLuaFunction = luaM_toref ( luaVM, 4 );
+                    iLuaFunction = luaM_toref ( luaVM, 4 );
 
                     if ( CStaticFunctionDefinitions::UnbindKey ( pPlayer, szKey, pLuaMain, szHitState, iLuaFunction ) )
                     {
@@ -7382,16 +7407,16 @@ int CLuaFunctionDefinitions::IsKeyBound ( lua_State* luaVM )
             CPlayer* pPlayer = lua_toplayer ( luaVM, 1 );
             const char* szKey = lua_tostring ( luaVM, 2 );
             const char* szHitState = NULL;
-			int iLuaFunction = LUA_REFNIL;
+            int iLuaFunction = LUA_REFNIL;
 
             if ( lua_type ( luaVM, 3 ) )
                 szHitState = lua_tostring ( luaVM, 3 );
             if ( lua_type ( luaVM, 4 ) )
-				iLuaFunction = luaM_toref ( luaVM, 4 );
+                iLuaFunction = luaM_toref ( luaVM, 4 );
 
             if ( !pPlayer )
                 m_pScriptDebugging->LogBadPointer ( luaVM, "isKeyBound", "player", 1 );
-			else {
+            else {
                 bool bBound;
                 if ( CStaticFunctionDefinitions::IsKeyBound ( pPlayer, szKey, pLuaMain, szHitState, iLuaFunction, bBound ) )
                 {
@@ -7437,7 +7462,7 @@ int CLuaFunctionDefinitions::GetFunctionsBoundToKey ( lua_State* luaVM )
                 }
 
                 // Create a new table
-		        lua_newtable ( luaVM );
+                lua_newtable ( luaVM );
 
                 // Add all the bound functions to it
                 unsigned int uiIndex = 0;
@@ -7457,8 +7482,8 @@ int CLuaFunctionDefinitions::GetFunctionsBoundToKey ( lua_State* luaVM )
                                     if ( strcmp ( szKey, pBind->boundKey->szKey ) == 0 )
                                     {
                                         lua_pushnumber ( luaVM, ++uiIndex );
-										lua_rawgeti ( luaVM, LUA_REGISTRYINDEX, pBind->m_iLuaFunction );
-			                            lua_settable ( luaVM, -3 );
+                                        lua_rawgeti ( luaVM, LUA_REGISTRYINDEX, pBind->m_iLuaFunction );
+                                        lua_settable ( luaVM, -3 );
                                     }
                                 }
                                 break;
@@ -7471,8 +7496,8 @@ int CLuaFunctionDefinitions::GetFunctionsBoundToKey ( lua_State* luaVM )
                                     if ( strcmp ( szKey, pBind->boundControl->szControl ) == 0 )
                                     {
                                         lua_pushnumber ( luaVM, ++uiIndex );
-										lua_rawgeti ( luaVM, LUA_REGISTRYINDEX, pBind->m_iLuaFunction );
-			                            lua_settable ( luaVM, -3 );
+                                        lua_rawgeti ( luaVM, LUA_REGISTRYINDEX, pBind->m_iLuaFunction );
+                                        lua_settable ( luaVM, -3 );
                                     }
                                 }
                                 break;
@@ -7505,7 +7530,7 @@ int CLuaFunctionDefinitions::GetKeyBoundToFunction ( lua_State* luaVM )
             lua_type ( luaVM, 2 ) == LUA_TFUNCTION )
         {
             CPlayer* pPlayer = lua_toplayer ( luaVM, 1 );
-			int iLuaFunction = luaM_toref ( luaVM, 2 );
+            int iLuaFunction = luaM_toref ( luaVM, 2 );
 
             if ( pPlayer )
             {
@@ -7521,7 +7546,7 @@ int CLuaFunctionDefinitions::GetKeyBoundToFunction ( lua_State* luaVM )
                             case KEY_BIND_FUNCTION:
                             {
                                 CKeyFunctionBind* pBind = static_cast < CKeyFunctionBind* > ( pKeyBind );
-								// ACHTUNG: DOES IT FIND THE CORRECT LUA REF HERE?
+                                // ACHTUNG: DOES IT FIND THE CORRECT LUA REF HERE?
                                 if ( iLuaFunction == pBind->m_iLuaFunction )
                                 {
                                     lua_pushstring ( luaVM, pBind->boundKey->szKey );
@@ -7532,7 +7557,7 @@ int CLuaFunctionDefinitions::GetKeyBoundToFunction ( lua_State* luaVM )
                             case KEY_BIND_CONTROL_FUNCTION:
                             {
                                 CControlFunctionBind* pBind = static_cast < CControlFunctionBind* > ( pKeyBind );
-								// ACHTUNG: DOES IT FIND THE CORRECT LUA REF HERE?
+                                // ACHTUNG: DOES IT FIND THE CORRECT LUA REF HERE?
                                 if ( iLuaFunction == pBind->m_iLuaFunction )
                                 {
                                     lua_pushstring ( luaVM, pBind->boundKey->szKey );
@@ -7729,24 +7754,24 @@ int CLuaFunctionDefinitions::CreateTeam ( lua_State* luaVM )
             ucBlue = static_cast < unsigned char > ( lua_tonumber ( luaVM, 4 ) );
         }
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				CTeam* pTeam = CStaticFunctionDefinitions::CreateTeam ( pResource, const_cast < char* > ( szName ), ucRed, ucGreen, ucBlue );
-				if ( pTeam )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pTeam );
-					}
-					lua_pushelement ( luaVM, pTeam );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                CTeam* pTeam = CStaticFunctionDefinitions::CreateTeam ( pResource, const_cast < char* > ( szName ), ucRed, ucGreen, ucBlue );
+                if ( pTeam )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pTeam );
+                    }
+                    lua_pushelement ( luaVM, pTeam );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -8252,25 +8277,25 @@ int CLuaFunctionDefinitions::CreateColCircle ( lua_State* luaVM )
         float fRadius = float ( lua_tonumber ( luaVM, 3 ) );
         if ( fRadius < 0.0f ) fRadius = 0.1f;
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create it and return it
-				CColCircle* pShape = CStaticFunctionDefinitions::CreateColCircle ( pResource, vecPosition, fRadius );
-				if ( pShape )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pShape );
-					}
-					lua_pushelement ( luaVM, pShape );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create it and return it
+                CColCircle* pShape = CStaticFunctionDefinitions::CreateColCircle ( pResource, vecPosition, fRadius );
+                if ( pShape )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pShape );
+                    }
+                    lua_pushelement ( luaVM, pShape );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -8304,25 +8329,25 @@ int CLuaFunctionDefinitions::CreateColCuboid ( lua_State* luaVM )
         if ( vecSize.fY < 0.0f ) vecSize.fY = 0.1f;
         if ( vecSize.fZ < 0.0f ) vecSize.fZ = 0.1f;
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create it and return it
-				CColCuboid* pShape = CStaticFunctionDefinitions::CreateColCuboid ( pResource, vecPosition, vecSize );
-				if ( pShape )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pShape );
-					}
-					lua_pushelement ( luaVM, pShape );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create it and return it
+                CColCuboid* pShape = CStaticFunctionDefinitions::CreateColCuboid ( pResource, vecPosition, vecSize );
+                if ( pShape )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pShape );
+                    }
+                    lua_pushelement ( luaVM, pShape );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -8350,25 +8375,25 @@ int CLuaFunctionDefinitions::CreateColSphere ( lua_State* luaVM )
         float fRadius = float ( lua_tonumber ( luaVM, 4 ) );
         if ( fRadius < 0.0f ) fRadius = 0.1f;
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create it and return it
-				CColSphere* pShape = CStaticFunctionDefinitions::CreateColSphere ( pResource, vecPosition, fRadius );
-				if ( pShape )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pShape );
-					}
-					lua_pushelement ( luaVM, pShape );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create it and return it
+                CColSphere* pShape = CStaticFunctionDefinitions::CreateColSphere ( pResource, vecPosition, fRadius );
+                if ( pShape )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pShape );
+                    }
+                    lua_pushelement ( luaVM, pShape );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -8397,25 +8422,25 @@ int CLuaFunctionDefinitions::CreateColRectangle ( lua_State* luaVM )
         if ( vecSize.fX < 0.0f ) vecSize.fX = 0.1f;
         if ( vecSize.fY < 0.0f ) vecSize.fY = 0.1f;
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create it and return it
-				CColRectangle* pShape = CStaticFunctionDefinitions::CreateColRectangle ( pResource, vecPosition, vecSize );
-				if ( pShape )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pShape );
-					}
-					lua_pushelement ( luaVM, pShape );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create it and return it
+                CColRectangle* pShape = CStaticFunctionDefinitions::CreateColRectangle ( pResource, vecPosition, vecSize );
+                if ( pShape )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pShape );
+                    }
+                    lua_pushelement ( luaVM, pShape );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -8437,16 +8462,16 @@ int CLuaFunctionDefinitions::CreateColPolygon ( lua_State* luaVM )
         // Grab the values
         CVector vecPosition = CVector ( ( float ) lua_tonumber ( luaVM, 1 ), ( float ) lua_tonumber ( luaVM, 2 ), 0.0f );
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create it and return it
-				CColPolygon* pShape = CStaticFunctionDefinitions::CreateColPolygon ( pResource, vecPosition );
-				if ( pShape )
-				{
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create it and return it
+                CColPolygon* pShape = CStaticFunctionDefinitions::CreateColPolygon ( pResource, vecPosition );
+                if ( pShape )
+                {
                     // Get the points
                     int iArgument = 3;
                     int iArgumentX = lua_type ( luaVM, iArgument++ );
@@ -8468,15 +8493,15 @@ int CLuaFunctionDefinitions::CreateColPolygon ( lua_State* luaVM )
                         }
                     }
 
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pShape );
-					}
-					lua_pushelement ( luaVM, pShape );
-					return 1;
-				}
-			}
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pShape );
+                    }
+                    lua_pushelement ( luaVM, pShape );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -8508,25 +8533,25 @@ int CLuaFunctionDefinitions::CreateColTube ( lua_State* luaVM )
         if ( fRadius < 0.0f ) fRadius = 0.1f;
         if ( fHeight < 0.0f ) fHeight = 0.1f;
 
-		CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
-		if ( pLuaMain )
-		{
-			CResource* pResource = pLuaMain->GetResource();
-			if ( pResource )
-			{
-				// Create it and return it
-				CColTube* pShape = CStaticFunctionDefinitions::CreateColTube ( pResource, vecPosition, fRadius, fHeight );
-				if ( pShape )
-				{
-					CElementGroup * pGroup = pResource->GetElementGroup();
-					if ( pGroup )
-					{
-						pGroup->Add ( pShape );
-					}
-					lua_pushelement ( luaVM, pShape );
-					return 1;
-				}
-			}
+        CLuaMain* pLuaMain = g_pGame->GetLuaManager()->GetVirtualMachine ( luaVM );
+        if ( pLuaMain )
+        {
+            CResource* pResource = pLuaMain->GetResource();
+            if ( pResource )
+            {
+                // Create it and return it
+                CColTube* pShape = CStaticFunctionDefinitions::CreateColTube ( pResource, vecPosition, fRadius, fHeight );
+                if ( pShape )
+                {
+                    CElementGroup * pGroup = pResource->GetElementGroup();
+                    if ( pGroup )
+                    {
+                        pGroup->Add ( pShape );
+                    }
+                    lua_pushelement ( luaVM, pShape );
+                    return 1;
+                }
+            }
         }
     }
     else
@@ -8683,7 +8708,7 @@ int CLuaFunctionDefinitions::AddCommandHandler ( lua_State* luaVM )
     if ( pLuaMain )
     {
         if ( type ( 1, LUA_TSTRING ) &&
-			 lua_type ( luaVM, 2 ) == LUA_TFUNCTION )
+             lua_type ( luaVM, 2 ) == LUA_TFUNCTION )
         {
             // Check if we have a restricted argument. Read it out if neccessary
             bool bRestricted = false;
@@ -8700,7 +8725,7 @@ int CLuaFunctionDefinitions::AddCommandHandler ( lua_State* luaVM )
             int iLuaFunction = luaM_toref ( luaVM, 2 );
 
             if ( szKey [0] != 0 && VERIFY_FUNCTION ( iLuaFunction ) )
-			{
+            {
                 // Add them to our list over command handlers
                 if ( m_pRegisteredCommands->AddCommand ( pLuaMain, szKey, iLuaFunction, bRestricted, bCaseSensitive ) )
                 {
@@ -8734,9 +8759,9 @@ int CLuaFunctionDefinitions::RemoveCommandHandler ( lua_State* luaVM )
             const char* szKey = lua_tostring ( luaVM, 1 );
             if ( szKey [0] )
             {
-				int iLuaFunction = NULL;
-				if ( lua_type ( luaVM, 2 ) == LUA_TFUNCTION )
-					iLuaFunction = luaM_toref ( luaVM, 2 );
+                int iLuaFunction = NULL;
+                if ( lua_type ( luaVM, 2 ) == LUA_TFUNCTION )
+                    iLuaFunction = luaM_toref ( luaVM, 2 );
 
                 // Remove it from our list
                 if ( m_pRegisteredCommands->RemoveCommand ( pLuaMain, szKey, iLuaFunction ) )
@@ -9211,27 +9236,27 @@ int CLuaFunctionDefinitions::Split ( lua_State* luaVM )
     unsigned int uiCount = 0;
     char* szToken = strtok ( strText, szDelimiter );
 
-	// Create a new table
-	lua_newtable ( luaVM );
+    // Create a new table
+    lua_newtable ( luaVM );
 
-	// Add our first token
-	lua_pushnumber ( luaVM, ++uiCount );
-	lua_pushstring ( luaVM, szToken );
-	lua_settable ( luaVM, -3 );
+    // Add our first token
+    lua_pushnumber ( luaVM, ++uiCount );
+    lua_pushstring ( luaVM, szToken );
+    lua_settable ( luaVM, -3 );
 
     // strtok until we're out of tokens
-	while ( szToken = strtok ( NULL, szDelimiter ) )
-	{
-		// Add the token to the table
-		lua_pushnumber ( luaVM, ++uiCount );
-		lua_pushstring ( luaVM, szToken );
-		lua_settable ( luaVM, -3 );
-	}
+    while ( szToken = strtok ( NULL, szDelimiter ) )
+    {
+        // Add the token to the table
+        lua_pushnumber ( luaVM, ++uiCount );
+        lua_pushstring ( luaVM, szToken );
+        lua_settable ( luaVM, -3 );
+    }
 
     // Delete the text
     delete [] strText;
 
-	return 1;
+    return 1;
 }
 
 
@@ -9301,10 +9326,10 @@ int CLuaFunctionDefinitions::SetTimer ( lua_State* luaVM )
     {
         if ( lua_type ( luaVM, 1 ) == LUA_TFUNCTION )
         {
-			CLuaTimer* pLuaTimer = luaMain->GetTimerManager ()->AddTimer ( luaVM );
-			if ( pLuaTimer )
+            CLuaTimer* pLuaTimer = luaMain->GetTimerManager ()->AddTimer ( luaVM );
+            if ( pLuaTimer )
             {
-				lua_pushtimer ( luaVM, pLuaTimer );
+                lua_pushtimer ( luaVM, pLuaTimer );
                 return 1;
             }
         }
@@ -9319,61 +9344,83 @@ int CLuaFunctionDefinitions::SetTimer ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::KillTimer ( lua_State* luaVM )
 {
-	CLuaMain * luaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
+    CLuaMain * luaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
     if ( luaMain )
     {
-		CLuaTimer* pLuaTimer = lua_totimer ( luaVM, 1 );
-		if ( pLuaTimer )
-		{
-			luaMain->GetTimerManager ()->RemoveTimer ( pLuaTimer );
+        CLuaTimer* pLuaTimer = lua_totimer ( luaVM, 1 );
+        if ( pLuaTimer )
+        {
+            luaMain->GetTimerManager ()->RemoveTimer ( pLuaTimer );
 
-			lua_pushboolean ( luaVM, true );
-			return 1;
-		}
-		else
-			m_pScriptDebugging->LogBadType ( luaVM, "killTimer" );
-	}
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+        else
+            m_pScriptDebugging->LogBadType ( luaVM, "killTimer" );
+    }
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+
+int CLuaFunctionDefinitions::ResetTimer ( lua_State* luaVM )
+{
+    CLuaMain * luaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
+    if ( luaMain )
+    {
+        CLuaTimer* pLuaTimer = lua_totimer ( luaVM, 1 );
+        if ( pLuaTimer )
+        {
+            luaMain->GetTimerManager ()->ResetTimer ( pLuaTimer );
+
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+        else
+            m_pScriptDebugging->LogBadType ( luaVM, "resetTimer" );
+    }
+
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::IsTimer ( lua_State* luaVM )
 {
-	CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
+    CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
     if ( pLuaMain )
     {
-		CLuaTimer* pLuaTimer = lua_totimer ( luaVM, 1 );
-		if ( pLuaTimer )
-		{
-			lua_pushboolean ( luaVM, pLuaMain->GetTimerManager ()->Exists ( pLuaTimer ) );
-			return 1;
-		}
-	}
+        CLuaTimer* pLuaTimer = lua_totimer ( luaVM, 1 );
+        if ( pLuaTimer )
+        {
+            lua_pushboolean ( luaVM, pLuaMain->GetTimerManager ()->Exists ( pLuaTimer ) );
+            return 1;
+        }
+    }
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::GetTimers ( lua_State* luaVM )
 {
-	// Find our VM
+    // Find our VM
     CLuaMain* pLuaMain = m_pLuaManager->GetVirtualMachine ( luaVM );
     if ( pLuaMain )
     {
-		unsigned long ulTime = 0;
-		int iArgument1 = lua_type ( luaVM, 1 );
-		if ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING )
+        unsigned long ulTime = 0;
+        int iArgument1 = lua_type ( luaVM, 1 );
+        if ( iArgument1 == LUA_TNUMBER || iArgument1 == LUA_TSTRING )
         {
-			ulTime = static_cast < unsigned long > ( lua_tonumber ( luaVM, 1 ) );
-		}
-		// Create a new table
-		lua_newtable ( luaVM );
+            ulTime = static_cast < unsigned long > ( lua_tonumber ( luaVM, 1 ) );
+        }
+        // Create a new table
+        lua_newtable ( luaVM );
 
         // Add all the timers with less than ulTime left
-		pLuaMain->GetTimerManager ()->GetTimers ( ulTime, pLuaMain );
+        pLuaMain->GetTimerManager ()->GetTimers ( ulTime, pLuaMain );
         return 1;
     }
 
@@ -9499,8 +9546,8 @@ int CLuaFunctionDefinitions::SaveMapData ( lua_State* luaVM )
         CElement* pParent = lua_toelement ( luaVM, 2 );
         if ( pNode && pParent )
         {
-			bool bChildren = false;
-			if ( lua_type ( luaVM, 3 ) == LUA_TBOOLEAN )
+            bool bChildren = false;
+            if ( lua_type ( luaVM, 3 ) == LUA_TBOOLEAN )
                 bChildren = ( lua_toboolean ( luaVM, 3 ) ) ? true:false;
 
             CXMLNode* pSavedNode = CStaticFunctionDefinitions::SaveMapData ( pParent, pNode, bChildren );
@@ -9581,7 +9628,7 @@ int CLuaFunctionDefinitions::SetGameType ( lua_State* luaVM )
     {
         // Return true.
         lua_pushboolean ( luaVM, true );
-	    return 1;
+        return 1;
     }
 
     // Failed
@@ -9605,7 +9652,7 @@ int CLuaFunctionDefinitions::SetMapName ( lua_State* luaVM )
 
     // Return true.
     lua_pushboolean ( luaVM, true );
-	return 1;
+    return 1;
 }
 
 
@@ -9674,90 +9721,137 @@ int CLuaFunctionDefinitions::RemoveRuleValue ( lua_State* luaVM )
 }
 
 
+int CLuaFunctionDefinitions::GetPlayerAnnounceValue ( lua_State* luaVM )
+{
+	if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA &&
+         lua_type ( luaVM, 2 ) == LUA_TSTRING )
+    {
+        CElement* pElement = lua_toelement ( luaVM, 1 );
+        std::string strKey = lua_tostring ( luaVM, 2 );
+        std::string strValue;
+
+        if ( CStaticFunctionDefinitions::GetPlayerAnnounceValue ( pElement, strKey, strValue ) )
+        {
+            lua_pushstring ( luaVM, strValue.c_str () );
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "getPlayerAnnounceValue" );
+
+    lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+
+int CLuaFunctionDefinitions::SetPlayerAnnounceValue ( lua_State* luaVM )
+{
+	if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA &&
+         lua_type ( luaVM, 2 ) == LUA_TSTRING &&
+         lua_type ( luaVM, 3 ) == LUA_TSTRING )
+    {
+        CElement* pElement = lua_toelement ( luaVM, 1 );
+        std::string strKey = lua_tostring ( luaVM, 2 );
+        std::string strValue = lua_tostring ( luaVM, 3 );
+
+        if ( CStaticFunctionDefinitions::SetPlayerAnnounceValue ( pElement, strKey, strValue ) )
+        {
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+    }
+    else
+        m_pScriptDebugging->LogBadType ( luaVM, "setPlayerAnnounceValue" );
+
+    lua_pushboolean ( luaVM, false );
+    return 1;
+}
+
+
 int CLuaFunctionDefinitions::ExecuteSQLCreateTable ( lua_State* luaVM )
 {
-	if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING )
-	{
+    if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING )
+    {
         CStaticFunctionDefinitions::ExecuteSQLCreateTable ( std::string ( lua_tostring ( luaVM, 1 ) ), std::string ( lua_tostring ( luaVM, 2 ) ) );
-		lua_pushboolean ( luaVM, true );
-		return 1;
-	}
-	else
+        lua_pushboolean ( luaVM, true );
+        return 1;
+    }
+    else
         m_pScriptDebugging->LogBadType ( luaVM, "executeSQLCreateTable" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::ExecuteSQLDropTable ( lua_State* luaVM )
 {
-	if ( lua_type ( luaVM, 1 ) == LUA_TSTRING )
-	{
+    if ( lua_type ( luaVM, 1 ) == LUA_TSTRING )
+    {
         CStaticFunctionDefinitions::ExecuteSQLDropTable ( lua_tostring ( luaVM, 1 ) );
-		lua_pushboolean ( luaVM, true );
-		return 1;
-	}
-	else
+        lua_pushboolean ( luaVM, true );
+        return 1;
+    }
+    else
         m_pScriptDebugging->LogBadType ( luaVM, "executeSQLDropTable" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
 int CLuaFunctionDefinitions::ExecuteSQLDelete ( lua_State* luaVM )
 {
     std::string strError;
-	bool bSuccess = false;
+    bool bSuccess = false;
 
-	if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING )
-	{
+    if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING )
+    {
         bSuccess = CStaticFunctionDefinitions::ExecuteSQLDelete ( std::string ( lua_tostring ( luaVM, 1 ) ), std::string ( lua_tostring ( luaVM, 2 ) ) );
-		if ( !bSuccess ) {
-			strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
+        if ( !bSuccess ) {
+            strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
             m_pScriptDebugging->LogError ( luaVM, strError.c_str () );
-		} else {
-			lua_pushboolean ( luaVM, true );
-			return 1;
-		}
-	}
-	else
+        } else {
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+    }
+    else
         m_pScriptDebugging->LogBadType ( luaVM, "executeSQLDelete" );
 
     lua_pushboolean ( luaVM, false );
     lua_pushstring ( luaVM, strError.c_str () );
-	return 2;
+    return 2;
 }
 
 
 int CLuaFunctionDefinitions::ExecuteSQLInsert ( lua_State* luaVM )
 {
     std::string strError;
-	bool bSuccess = false;
+    bool bSuccess = false;
 
-	if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING )
-	{
+    if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING )
+    {
         std::string strColumns;
 
-		if ( lua_type ( luaVM, 3 ) == LUA_TSTRING )
+        if ( lua_type ( luaVM, 3 ) == LUA_TSTRING )
             strColumns = std::string ( lua_tostring ( luaVM, 3 ) );
 
         bSuccess = CStaticFunctionDefinitions::ExecuteSQLInsert ( std::string ( lua_tostring ( luaVM, 1 ) ), std::string ( lua_tostring ( luaVM, 2 ) ), strColumns );
-		if ( !bSuccess ) {
-			strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
+        if ( !bSuccess ) {
+            strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
             m_pScriptDebugging->LogError ( luaVM, strError.c_str () );
-		} else {
-			lua_pushboolean ( luaVM, true );
-			return 1;
-		}
-	}
-	else
+        } else {
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+    }
+    else
         m_pScriptDebugging->LogBadType ( luaVM, "executeSQLInsert" );
 
     lua_pushboolean ( luaVM, false );
     lua_pushstring ( luaVM, strError.c_str () );
-	return 2;
+    return 2;
 }
 
 
@@ -9765,21 +9859,21 @@ int CLuaFunctionDefinitions::ExecuteSQLQuery ( lua_State* luaVM )
 {
     std::string strError;
 
-	if ( lua_type ( luaVM, 1 ) == LUA_TSTRING ) {
-		CLuaArguments Args;
-		CRegistryResult Result;
+    if ( lua_type ( luaVM, 1 ) == LUA_TSTRING ) {
+        CLuaArguments Args;
+        CRegistryResult Result;
         std::string strQuery = std::string ( lua_tostring ( luaVM, 1 ) );
 
-		Args.ReadArguments ( luaVM, 2 );
+        Args.ReadArguments ( luaVM, 2 );
 
-		if ( CStaticFunctionDefinitions::ExecuteSQLQuery ( strQuery, &Args, &Result ) ) {
-			lua_newtable ( luaVM );
-			for ( int i = 0; i < Result.nRows; i++ ) {
-				lua_newtable ( luaVM );								// new table
-				lua_pushnumber ( luaVM, i+1 );						// row index number (starting at 1, not 0)
-				lua_pushvalue ( luaVM, -2 );						// value
-				lua_settable ( luaVM, -4 );						    // refer to the top level table
-				for ( int j = 0; j < Result.nColumns; j++ )
+        if ( CStaticFunctionDefinitions::ExecuteSQLQuery ( strQuery, &Args, &Result ) ) {
+            lua_newtable ( luaVM );
+            for ( int i = 0; i < Result.nRows; i++ ) {
+                lua_newtable ( luaVM );                             // new table
+                lua_pushnumber ( luaVM, i+1 );                      // row index number (starting at 1, not 0)
+                lua_pushvalue ( luaVM, -2 );                        // value
+                lua_settable ( luaVM, -4 );                         // refer to the top level table
+                for ( int j = 0; j < Result.nColumns; j++ )
                 {
                     CRegistryResultCell& cell = Result.Data[i][j];
                     if ( cell.nType == SQLITE_NULL )
@@ -9804,16 +9898,16 @@ int CLuaFunctionDefinitions::ExecuteSQLQuery ( lua_State* luaVM )
                         default:
                             lua_pushnil ( luaVM );
                     }
-					lua_settable ( luaVM, -3 );
-				}
-				lua_pop ( luaVM, 1 );							    // pop the inner table
-			}
-			return 1;
-		} else {
+                    lua_settable ( luaVM, -3 );
+                }
+                lua_pop ( luaVM, 1 );                               // pop the inner table
+            }
+            return 1;
+        } else {
             strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
             m_pScriptDebugging->LogError ( luaVM, strError.c_str () );
-		}
-	}
+        }
+    }
     else
         m_pScriptDebugging->LogBadType ( luaVM, "executeSQLQuery" );
 
@@ -9829,26 +9923,26 @@ int CLuaFunctionDefinitions::ExecuteSQLSelect ( lua_State* luaVM )
 
     if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING )
     {
-		CRegistryResult Result;
+        CRegistryResult Result;
         std::string strTable = std::string ( lua_tostring ( luaVM, 1 ) );
         std::string strColumns = std::string ( lua_tostring ( luaVM, 2 ) );
         std::string strWhere;
-		unsigned int uiLimit = 0;
+        unsigned int uiLimit = 0;
 
-		if ( lua_type ( luaVM, 3 ) == LUA_TSTRING )
+        if ( lua_type ( luaVM, 3 ) == LUA_TSTRING )
             strWhere = std::string ( lua_tostring ( luaVM, 3 ) );
-		if ( lua_type ( luaVM, 4 ) == LUA_TNUMBER )
-			uiLimit = static_cast < unsigned int > ( lua_tonumber ( luaVM, 4 ) );
+        if ( lua_type ( luaVM, 4 ) == LUA_TNUMBER )
+            uiLimit = static_cast < unsigned int > ( lua_tonumber ( luaVM, 4 ) );
 
-		if ( CStaticFunctionDefinitions::ExecuteSQLSelect ( strTable, strColumns, strWhere, uiLimit, &Result ) )
+        if ( CStaticFunctionDefinitions::ExecuteSQLSelect ( strTable, strColumns, strWhere, uiLimit, &Result ) )
         {
-			lua_newtable ( luaVM );
-			for ( int i = 0; i < Result.nRows; i++ ) {
-				lua_newtable ( luaVM );								// new table
-				lua_pushnumber ( luaVM, i+1 );						// row index number (starting at 1, not 0)
-				lua_pushvalue ( luaVM, -2 );						// value
-				lua_settable ( luaVM, -4 );						    // refer to the top level table
-				for ( int j = 0; j < Result.nColumns; j++ )
+            lua_newtable ( luaVM );
+            for ( int i = 0; i < Result.nRows; i++ ) {
+                lua_newtable ( luaVM );                             // new table
+                lua_pushnumber ( luaVM, i+1 );                      // row index number (starting at 1, not 0)
+                lua_pushvalue ( luaVM, -2 );                        // value
+                lua_settable ( luaVM, -4 );                         // refer to the top level table
+                for ( int j = 0; j < Result.nColumns; j++ )
                 {
                     CRegistryResultCell& cell = Result.Data[i][j];
                     if ( cell.nType == SQLITE_NULL )
@@ -9873,17 +9967,17 @@ int CLuaFunctionDefinitions::ExecuteSQLSelect ( lua_State* luaVM )
                         default:
                             lua_pushnil ( luaVM );
                     }
-					lua_settable ( luaVM, -3 );
-				}
-				lua_pop ( luaVM, 1 );							    // pop the inner table
-			}
-			return 1;
-		}
+                    lua_settable ( luaVM, -3 );
+                }
+                lua_pop ( luaVM, 1 );                               // pop the inner table
+            }
+            return 1;
+        }
         else
         {
-			strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
+            strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
             m_pScriptDebugging->LogError ( luaVM, strError.c_str () );
-		}
+        }
     }
     else
         m_pScriptDebugging->LogBadType ( luaVM, "executeSQLSelect" );
@@ -9901,17 +9995,17 @@ int CLuaFunctionDefinitions::ExecuteSQLUpdate ( lua_State* luaVM )
     if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) == LUA_TSTRING && lua_type ( luaVM, 3 ) == LUA_TSTRING )
     {
         std::string strTable    = std::string ( lua_tostring ( luaVM, 1 ) );
-		std::string strSet      = std::string ( lua_tostring ( luaVM, 2 ) );
+        std::string strSet      = std::string ( lua_tostring ( luaVM, 2 ) );
         std::string strWhere    = std::string ( lua_tostring ( luaVM, 3 ) );
 
         if ( CStaticFunctionDefinitions::ExecuteSQLUpdate ( strTable, strSet, strWhere ) )
         {
             lua_pushboolean ( luaVM, true );
             return 1;
-		} else {
-			strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
+        } else {
+            strError = "Database query failed: " + CStaticFunctionDefinitions::SQLGetLastError ();
             m_pScriptDebugging->LogError ( luaVM, strError.c_str () );
-		}
+        }
     }
     else
         m_pScriptDebugging->LogBadType ( luaVM, "executeSQLUpdate" );
@@ -10030,15 +10124,15 @@ int CLuaFunctionDefinitions::GetAccount ( lua_State* luaVM )
     if ( pLuaMain )
     {
         if ( lua_type ( luaVM, 1 ) == LUA_TSTRING &&
-			( lua_type ( luaVM, 2 ) == LUA_TSTRING || lua_type ( luaVM, 2 ) == LUA_TNONE ) )
+            ( lua_type ( luaVM, 2 ) == LUA_TSTRING || lua_type ( luaVM, 2 ) == LUA_TNONE ) )
         {
             const char* szName = lua_tostring ( luaVM, 1 );
-			const char* szPassword = NULL;
-			if ( lua_type ( luaVM, 2 ) == LUA_TSTRING )
-				szPassword = lua_tostring ( luaVM, 2 );
+            const char* szPassword = NULL;
+            if ( lua_type ( luaVM, 2 ) == LUA_TSTRING )
+                szPassword = lua_tostring ( luaVM, 2 );
 
-			CAccount* pAccount = CStaticFunctionDefinitions::GetAccount ( szName, szPassword );
-			if ( pAccount )
+            CAccount* pAccount = CStaticFunctionDefinitions::GetAccount ( szName, szPassword );
+            if ( pAccount )
             {
                 lua_pushaccount ( luaVM, pAccount );
                 return 1;
@@ -10304,9 +10398,9 @@ int CLuaFunctionDefinitions::CancelEvent ( lua_State* luaVM )
         if ( iArgument1 == LUA_TBOOLEAN )
             bCancel = ( lua_toboolean ( luaVM, 1 ) ) ? true:false;
 
-		const char* szReason = NULL;
-		if ( lua_type ( luaVM, 2 ) == LUA_TSTRING )
-			szReason = lua_tostring ( luaVM, 2 );
+        const char* szReason = NULL;
+        if ( lua_type ( luaVM, 2 ) == LUA_TSTRING )
+            szReason = lua_tostring ( luaVM, 2 );
 
         CStaticFunctionDefinitions::CancelEvent ( bCancel, szReason );
 
@@ -10323,14 +10417,14 @@ int CLuaFunctionDefinitions::CancelEvent ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::GetCancelReason ( lua_State* luaVM )
 {
-	char* szReason = NULL;
-	if ( CStaticFunctionDefinitions::GetCancelReason ( szReason ) )
-	{
-		lua_pushstring ( luaVM, szReason );
-		return 1;
-	}
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    char* szReason = NULL;
+    if ( CStaticFunctionDefinitions::GetCancelReason ( szReason ) )
+    {
+        lua_pushstring ( luaVM, szReason );
+        return 1;
+    }
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 
@@ -10357,8 +10451,8 @@ int CLuaFunctionDefinitions::KickPlayer ( lua_State* luaVM )
             {
                 pResponsible = lua_toplayer ( luaVM, 2 );
 
-				if ( lua_type ( luaVM, 3 ) == LUA_TSTRING )
-					szReason = lua_tostring ( luaVM, 3 );
+                if ( lua_type ( luaVM, 3 ) == LUA_TSTRING )
+                    szReason = lua_tostring ( luaVM, 3 );
             }
             else if ( lua_type ( luaVM, 2 ) == LUA_TSTRING )
                 szReason = lua_tostring ( luaVM, 2 );
@@ -10493,7 +10587,7 @@ int CLuaFunctionDefinitions::AddBan ( lua_State* luaVM )
         }
 
         CBan* pBan = NULL;
-		if ( pBan = CStaticFunctionDefinitions::AddBan ( szIP, szUsername, szSerial, pResponsible, szReason, tUnban ) )
+        if ( pBan = CStaticFunctionDefinitions::AddBan ( szIP, szUsername, szSerial, pResponsible, szReason, tUnban ) )
         {
             lua_pushban ( luaVM, pBan );
             return 1;
@@ -10578,7 +10672,7 @@ int CLuaFunctionDefinitions::GetBanIP ( lua_State* luaVM )
 }
 
 
-int	CLuaFunctionDefinitions::GetBanSerial ( lua_State* luaVM )
+int CLuaFunctionDefinitions::GetBanSerial ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
@@ -10602,7 +10696,7 @@ int	CLuaFunctionDefinitions::GetBanSerial ( lua_State* luaVM )
 }
 
 
-int	CLuaFunctionDefinitions::GetBanUsername ( lua_State* luaVM )
+int CLuaFunctionDefinitions::GetBanUsername ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
@@ -10626,7 +10720,7 @@ int	CLuaFunctionDefinitions::GetBanUsername ( lua_State* luaVM )
 }
 
 
-int	CLuaFunctionDefinitions::GetBanNick ( lua_State* luaVM )
+int CLuaFunctionDefinitions::GetBanNick ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
@@ -10650,7 +10744,7 @@ int	CLuaFunctionDefinitions::GetBanNick ( lua_State* luaVM )
 }
 
 
-int	CLuaFunctionDefinitions::GetBanTime ( lua_State* luaVM )
+int CLuaFunctionDefinitions::GetBanTime ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
@@ -10674,7 +10768,7 @@ int	CLuaFunctionDefinitions::GetBanTime ( lua_State* luaVM )
 }
 
 
-int	CLuaFunctionDefinitions::GetUnbanTime ( lua_State* luaVM )
+int CLuaFunctionDefinitions::GetUnbanTime ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
@@ -10698,7 +10792,7 @@ int	CLuaFunctionDefinitions::GetUnbanTime ( lua_State* luaVM )
 }
 
 
-int	CLuaFunctionDefinitions::GetBanReason ( lua_State* luaVM )
+int CLuaFunctionDefinitions::GetBanReason ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
@@ -10722,7 +10816,7 @@ int	CLuaFunctionDefinitions::GetBanReason ( lua_State* luaVM )
 }
 
 
-int	CLuaFunctionDefinitions::GetBanAdmin ( lua_State* luaVM )
+int CLuaFunctionDefinitions::GetBanAdmin ( lua_State* luaVM )
 {
     if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA )
     {
@@ -10807,25 +10901,25 @@ int CLuaFunctionDefinitions::ShowCursor ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::ShowChat ( lua_State* luaVM )
 {
-	if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA &&
+    if ( lua_type ( luaVM, 1 ) == LUA_TLIGHTUSERDATA &&
          lua_type ( luaVM, 2 ) == LUA_TBOOLEAN )
     {
-		CElement* pElement = lua_toelement ( luaVM, 1 );
+        CElement* pElement = lua_toelement ( luaVM, 1 );
         bool bShow = ( lua_toboolean ( luaVM, 2 ) ) ? true:false;
 
         if ( pElement )
         {
-			if ( CStaticFunctionDefinitions::ShowChat ( pElement, bShow ) )
+            if ( CStaticFunctionDefinitions::ShowChat ( pElement, bShow ) )
             {
-				lua_pushboolean ( luaVM, true );
+                lua_pushboolean ( luaVM, true );
                 return 1;
             }
         }
         else
-			m_pScriptDebugging->LogBadPointer ( luaVM, "showChat", "element", 1 );
+            m_pScriptDebugging->LogBadPointer ( luaVM, "showChat", "element", 1 );
     }
     else
-		m_pScriptDebugging->LogBadType ( luaVM, "showChat" );
+        m_pScriptDebugging->LogBadType ( luaVM, "showChat" );
 
     lua_pushboolean ( luaVM, false );
     return 1;
@@ -10865,49 +10959,49 @@ int CLuaFunctionDefinitions::GetServerPort ( lua_State* luaVM )
 
 int CLuaFunctionDefinitions::Set ( lua_State* luaVM )
 {
-	CResource* pResource = m_pResourceManager->GetResourceFromLuaState ( luaVM );
+    CResource* pResource = m_pResourceManager->GetResourceFromLuaState ( luaVM );
 
-	if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) > LUA_TNIL ) {
-		CLuaArguments Args;
+    if ( lua_type ( luaVM, 1 ) == LUA_TSTRING && lua_type ( luaVM, 2 ) > LUA_TNIL ) {
+        CLuaArguments Args;
         for ( int i = 2; i <= lua_gettop ( luaVM ); i++ )
-		    Args.ReadArgument ( luaVM, i );
+            Args.ReadArgument ( luaVM, i );
 
         std::string strSetting = lua_tostring ( luaVM, 1 );
         std::string strResourceName = pResource->GetName ();
         std::string strJSON;
         Args.WriteToJSONString ( strJSON );
 
-		if ( g_pGame->GetSettings ()->Set ( strResourceName.c_str (), strSetting.c_str (), strJSON.c_str () ) )
-		{
-			lua_pushboolean ( luaVM, true );
-			return 1;
-		}
-		else
-			m_pScriptDebugging->LogWarning ( luaVM, "Resource '%s' cannot access setting '%s'", strResourceName.c_str (), strSetting.c_str () );
-	} else
-		m_pScriptDebugging->LogBadType ( luaVM, "set" );
+        if ( g_pGame->GetSettings ()->Set ( strResourceName.c_str (), strSetting.c_str (), strJSON.c_str () ) )
+        {
+            lua_pushboolean ( luaVM, true );
+            return 1;
+        }
+        else
+            m_pScriptDebugging->LogWarning ( luaVM, "Resource '%s' cannot access setting '%s'", strResourceName.c_str (), strSetting.c_str () );
+    } else
+        m_pScriptDebugging->LogBadType ( luaVM, "set" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 #define PUSH_SETTING(x,buf) \
-	pAttributes = &(x->GetAttributes ()); \
-	Args.PushString ( pAttributes->Find ( "name" )->GetValue ().c_str () ); \
-	buf = const_cast < char* > ( pAttributes->Find ( "value" )->GetValue ().c_str () ); \
-	if ( !Args.ReadFromJSONString ( buf ) ) { \
-		Args.PushString ( buf ); \
-	}
+    pAttributes = &(x->GetAttributes ()); \
+    Args.PushString ( pAttributes->Find ( "name" )->GetValue ().c_str () ); \
+    buf = const_cast < char* > ( pAttributes->Find ( "value" )->GetValue ().c_str () ); \
+    if ( !Args.ReadFromJSONString ( buf ) ) { \
+        Args.PushString ( buf ); \
+    }
 
 int CLuaFunctionDefinitions::Get ( lua_State* luaVM )
 {
-	CResource* pResource = m_pResourceManager->GetResourceFromLuaState ( luaVM );
+    CResource* pResource = m_pResourceManager->GetResourceFromLuaState ( luaVM );
 
-	if ( lua_type ( luaVM, 1 ) == LUA_TSTRING ) {
-		CLuaArguments Args;
-		CXMLAttributes *pAttributes;
-		unsigned int uiIndex = 0;
-		bool bDeleteNode;
+    if ( lua_type ( luaVM, 1 ) == LUA_TSTRING ) {
+        CLuaArguments Args;
+        CXMLAttributes *pAttributes;
+        unsigned int uiIndex = 0;
+        bool bDeleteNode;
 
         // Extract attribute name if setting to be gotten has three parts i.e. resname.settingname.attributename
         SString strSetting = lua_tostring ( luaVM, 1 );
@@ -10919,62 +11013,62 @@ int CLuaFunctionDefinitions::Get ( lua_State* luaVM )
             strAttribute = Result[2];
         }
 
-		// Get the setting
-		CXMLNode *pSubNode, *pNode = g_pGame->GetSettings ()->Get ( pResource->GetName ().c_str (), strSetting.c_str (), bDeleteNode );
+        // Get the setting
+        CXMLNode *pSubNode, *pNode = g_pGame->GetSettings ()->Get ( pResource->GetName ().c_str (), strSetting.c_str (), bDeleteNode );
 
-		// Only proceed if we have a valid node
-		if ( pNode ) {
+        // Only proceed if we have a valid node
+        if ( pNode ) {
             // Argument count
             unsigned int uiArgCount = 1;
 
-			// See if we need to return a table with single or multiple entries
-			if ( pNode->GetSubNodeCount () == 0 ) {
-				// See if required attribute exists
+            // See if we need to return a table with single or multiple entries
+            if ( pNode->GetSubNodeCount () == 0 ) {
+                // See if required attribute exists
                 CXMLAttribute *pAttribute = pNode->GetAttributes().Find ( strAttribute.c_str () );
                 if ( !pAttribute )
                 {
-			        if ( bDeleteNode )
-				        delete pNode;
-	                lua_pushboolean ( luaVM, false );
-	                return 1;
+                    if ( bDeleteNode )
+                        delete pNode;
+                    lua_pushboolean ( luaVM, false );
+                    return 1;
                 }
-				// We only have a single entry for a specific setting, so output a string
-				char *szDataValue = const_cast < char* > ( pAttribute->GetValue ().c_str () );
-				if ( !Args.ReadFromJSONString ( szDataValue ) ) {
-					// No valid JSON? Parse as plain text
-					Args.PushString ( szDataValue );
-				}
-				Args.PushArguments ( luaVM );
+                // We only have a single entry for a specific setting, so output a string
+                char *szDataValue = const_cast < char* > ( pAttribute->GetValue ().c_str () );
+                if ( !Args.ReadFromJSONString ( szDataValue ) ) {
+                    // No valid JSON? Parse as plain text
+                    Args.PushString ( szDataValue );
+                }
+                Args.PushArguments ( luaVM );
                 uiArgCount = Args.Count ();
 
-				/* Don't output a table because although it is more consistent with the multiple values output below,
-				** due to lua's implementation of associative arrays (assuming we use the "setting-name", "value" key-value pairs)
-				** it would require the scripter to walk through an array that only has a single entry which is a Bad Thing, performance wise.
-				**
-				PUSH_SETTING ( pNode );
-				Args.PushAsTable ( luaVM );
-				**/
-			} else {
-				// We need to return multiply entries, so push all subnodes
-				char *szDataValue;
-				while ( pSubNode = pNode->FindSubNode ( "setting", uiIndex++ ) ) {
-					PUSH_SETTING ( pSubNode, szDataValue );
-				}
-				// Push a table and return
-				Args.PushAsTable ( luaVM );
-			}
+                /* Don't output a table because although it is more consistent with the multiple values output below,
+                ** due to lua's implementation of associative arrays (assuming we use the "setting-name", "value" key-value pairs)
+                ** it would require the scripter to walk through an array that only has a single entry which is a Bad Thing, performance wise.
+                **
+                PUSH_SETTING ( pNode );
+                Args.PushAsTable ( luaVM );
+                **/
+            } else {
+                // We need to return multiply entries, so push all subnodes
+                char *szDataValue;
+                while ( pSubNode = pNode->FindSubNode ( "setting", uiIndex++ ) ) {
+                    PUSH_SETTING ( pSubNode, szDataValue );
+                }
+                // Push a table and return
+                Args.PushAsTable ( luaVM );
+            }
 
-			// Check if we have to delete the node
-			if ( bDeleteNode )
-				delete pNode;
+            // Check if we have to delete the node
+            if ( bDeleteNode )
+                delete pNode;
 
-			return uiArgCount;
-		}
-	} else
-		m_pScriptDebugging->LogBadType ( luaVM, "get" );
+            return uiArgCount;
+        }
+    } else
+        m_pScriptDebugging->LogBadType ( luaVM, "get" );
 
-	lua_pushboolean ( luaVM, false );
-	return 1;
+    lua_pushboolean ( luaVM, false );
+    return 1;
 }
 
 int CLuaFunctionDefinitions::Md5 ( lua_State* luaVM )
@@ -10985,7 +11079,7 @@ int CLuaFunctionDefinitions::Md5 ( lua_State* luaVM )
         char szResult[33];
         CMD5Hasher hasher;
         hasher.Calculate ( lua_tostring ( luaVM, 1 ), lua_objlen ( luaVM, 1 ), md5bytes );
-		hasher.ConvertToHex ( md5bytes, szResult );
+        hasher.ConvertToHex ( md5bytes, szResult );
         lua_pushstring ( luaVM, szResult );
         return 1;
     }

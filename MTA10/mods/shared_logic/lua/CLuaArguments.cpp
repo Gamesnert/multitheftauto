@@ -40,9 +40,9 @@ CLuaArguments::CLuaArguments ( const CLuaArguments& Arguments, std::map < CLuaAr
 
 CLuaArgument* CLuaArguments::operator [] ( const unsigned int uiPosition ) const
 {
-	if ( uiPosition < m_Arguments.size () )
-		return m_Arguments.at ( uiPosition );
-	return NULL;
+    if ( uiPosition < m_Arguments.size () )
+        return m_Arguments.at ( uiPosition );
+    return NULL;
 }
 
 
@@ -332,7 +332,7 @@ CLuaArgument* CLuaArguments::PushElement ( CClientEntity* pElement )
 }
 
 
-CLuaArgument* CLuaArguments::PushArgument ( CLuaArgument& Argument )
+CLuaArgument* CLuaArguments::PushArgument ( const CLuaArgument& Argument )
 {
     CLuaArgument* pArgument = new CLuaArgument ( Argument );
     m_Arguments.push_back ( pArgument );
@@ -378,10 +378,10 @@ bool CLuaArguments::ReadFromBitStream ( NetBitStreamInterface& bitStream, std::v
         pKnownTables->push_back ( this );
         for ( unsigned short us = 0 ; us < usNumArgs ; us++ )
         {
-		    CLuaArgument* pArgument = new CLuaArgument ( bitStream, pKnownTables );
+            CLuaArgument* pArgument = new CLuaArgument ( bitStream, pKnownTables );
             m_Arguments.push_back ( pArgument );
         }
-	}
+    }
 
     if ( bKnownTablesCreated )
         delete pKnownTables;
@@ -415,5 +415,5 @@ bool CLuaArguments::WriteToBitStream ( NetBitStreamInterface& bitStream, std::ma
     if ( bKnownTablesCreated )
         delete pKnownTables;
 
-	return bSuccess;
+    return bSuccess;
 }
