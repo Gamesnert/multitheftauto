@@ -239,7 +239,8 @@ void CLuaManager::LoadCFunctions ( void )
 
     // Player get funcs
     CLuaCFunctions::AddFunction ( "getPlayerCount", CLuaFunctionDefinitions::GetPlayerCount );
-    CLuaCFunctions::AddFunction ( "getPlayerWeapon", CLuaFunctionDefinitions::GetPlayerWeapon );
+    CLuaCFunctions::AddFunction ( "getPlayerWeapon", CLuaFunctionDefinitions::GetPedWeapon );
+	CLuaCFunctions::AddFunction ( "getPedWeapon", CLuaFunctionDefinitions::GetPedWeapon );
     CLuaCFunctions::AddFunction ( "getPlayerAmmoInClip", CLuaFunctionDefinitions::GetPlayerAmmoInClip );
     CLuaCFunctions::AddFunction ( "getPlayerTotalAmmo", CLuaFunctionDefinitions::GetPlayerTotalAmmo );
     CLuaCFunctions::AddFunction ( "getPlayerFromNick", CLuaFunctionDefinitions::GetPlayerFromName );
